@@ -1,0 +1,16 @@
+{
+  "id": "write_file",
+  "name": "Write File",
+  "description": "Write content to a file in user_data.",
+  "version": "1.0.0",
+  "type": "TOOL",
+  "order": 101,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "filename": { "type": "string", "description": "Name of the file" },
+      "content": { "type": "string", "description": "Text content to write" }
+    },
+    "required": ["filename", "content"]
+  }
+}

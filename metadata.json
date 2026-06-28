@@ -1,0 +1,11 @@
+{
+  "name": "yuihime (Perfect Giftia OS) .27",
+  "description": "An autonomous adaptive agent with persistent long-term memory, simulated dreaming cycles, and API-based learning capabilities.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "read_file",
+  "name": "Read File",
+  "description": "Read content from a file in user_data.",
+  "version": "1.0.0",
+  "type": "TOOL",
+  "order": 102,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "filename": { "type": "string", "description": "Name of the file" }
+    },
+    "required": ["filename"]
+  }
+}
