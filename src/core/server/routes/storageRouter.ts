@@ -10,7 +10,7 @@ export function registerStorageRoutes(app: express.Express, db: any) {
       if (filterContext) {
         rows = db.prepare(`
           SELECT * FROM memories 
-          WHERE context = ? OR context IS NULL OR context = '' OR speaker = 'System' OR context = 'cron_trigger'
+          WHERE context = ?
           ORDER BY timestamp ASC
         `).all(filterContext);
       } else {

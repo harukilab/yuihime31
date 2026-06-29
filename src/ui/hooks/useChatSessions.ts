@@ -380,7 +380,7 @@ export function useChatSessions(loadDataCallback?: () => void) {
       thoughts
     };
     
-    if (isSystem && !isCritical) {
+    if (isSystem) {
       setBackgroundLogs(prev => {
         const lastFew = prev.slice(-15);
         const isDuplicate = lastFew.some(l => stripMessageMeta(l.content) === strippedNew);

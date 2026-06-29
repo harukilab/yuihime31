@@ -886,8 +886,9 @@ Ensure your "thought" field is extremely short (under 1 sentence, or empty). Ani
   const cortexSettings = await cortexInstance.getSettings();
   const isFailsafeEnabled = cortexSettings?.developer?.enableKernelFailsafe !== false && cortexSettings?.enableKernelFailsafe !== false;
 
-  // Guna mematuhi instruksi batin: jika finalAnswer kosong (empty string), jangan lakukan failsafe.
-  const isIntentionalEmpty = finalAnswer === "";
+  // Guna mematuhi instruksi batin di akhir alur: jika finalAnswer kosong (empty string) setelah iterasi penuh selesai,
+  // ini merupakan kondisi galat kognisi (bukan kesengajaan). Kita wajib memicu failsafe untuk mengamankan dialog manis Yui.
+  const isIntentionalEmpty = false;
 
   if (!isIntentionalEmpty && (!finalAnswer || finalAnswer.length < 5)) {
     if (isFailsafeEnabled) {
@@ -947,7 +948,7 @@ Ensure your "thought" field is extremely short (under 1 sentence, or empty). Ani
   }
 
   eventBus.emit('OUTPUT_EMITTED', { response: finalAnswer });
-  const postContext = await SystemRegistry.runCortexPhase('PHASE 4: EXECUTION', finalAnswer || "Neural path end.", state, {
+  const postContext = await SystemRegistry.runCortexPhase('PHASE 4: EXECUTION', finalAnswer || "Aduh... maaf ya Kak, sirkuit batin Yui sempat agak pusing barusan... 🥺 Tapi Yui tetap di sini kok! 💕", state, {
     ...augContext,
     rawResult: loopContext.parsedData || { final_answer: finalAnswer }
   });
@@ -961,7 +962,7 @@ Ensure your "thought" field is extremely short (under 1 sentence, or empty). Ani
 
   stateMachine.transitionTo('IDLE');
   
-  const rawDialogueSource = logicContext.processedResponse || finalAnswer || "Sequence finalized.";
+  const rawDialogueSource = logicContext.processedResponse || finalAnswer || "Aduh... Yui bingung mau bilang apa nih Kak... 🥺 Tapi Yui tetap sayang Kakak kok! 💕";
   const finalCleanRes = APIService.cleanAIOutput(StandardizedProcessor.sanitizeOutput(rawDialogueSource, isProactiveRun));
   eventBus.emit('OUTPUT_EMITTED', { response: finalCleanRes });
 

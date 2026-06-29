@@ -1,6 +1,32 @@
 # YuiHime Project Updates Logs
 ---
 
+## [3.00] - 2026-06-29
+### Fixed
+- **Pembersihan Kebocoran Log Sistem & Perbaikan Failsafe "Neural path end"**:
+  - Memperbaiki bug "Neural path end" yang muncul di antarmuka obrolan Yui saat LLM gagal menghasilkan dialog dalam format JSON standar atau mengalami galat kognisi sementara.
+  - Memastikan jika `finalAnswer` kosong setelah melewati seluruh iterasi nalar, sistem secara otomatis memicu sirkuit failsafe batin Yui ke balasan pemulihan karakter manis (*cute in-character error response*) alih-alih menampilkan pesan sistem "Neural path end" atau "Sequence finalized".
+  - Mengisolasi total log teknis sistem (seperti `[CORTEX_LOOP]`, `[KERNEL_FAIL_SAFE]`, dll.) agar disalurkan secara murni ke `backgroundLogs` (Consoles) dan tidak akan pernah bocor sebagai balon ucapan Yui di linimasa chat utama `StageTab.tsx`.
+
+## [2.99] - 2026-06-29
+### Fixed
+- **Strict Session Filtering & Elimination of Leakage of Deleted/Orphaned Chats**:
+  - Memperbaiki kebocoran data di mana memori dengan konteks kosong (`context IS NULL` atau `context = ''`) atau log sistem internal disajikan secara paksa ke dalam riwayat obrolan sesi aktif pada `StageTab.tsx` dan `ArchiveTab.tsx`.
+  - Mengubah kueri pada berkas API backend `/src/core/server/routes/storageRouter.ts` agar saat memfilter menggunakan parameter `context` spesifik (seperti `web_session_XYZ`), sistem hanya akan mengembalikan data memori yang benar-benar memiliki relasi kepemilikan persis terhadap ID sesi aktif tersebut.
+  - Memastikan aksi "Delete all chat sessions" menghapus total seluruh data pada sesi terkait tanpa menyisakan riwayat "hantu" tak berpemilik di antarmuka obrolan Yui.
+
+## [2.98] - 2026-06-29
+### Added
+- **Visualisasi/Tampilan API Key (Password Field Eye Toggle)**:
+  - Mengimplementasikan tombol toggle mata (`Eye` / `EyeOff`) yang sangat interaktif pada seluruh kolom masukan bertipe rahasia/kata sandi (`type: 'password'`) di `/src/ui/ModularSettings.tsx`.
+  - Pengguna sekarang dapat melihat secara transparan karakter asli dari kunci API (termasuk format kunci `"AQ."` atau token kustom lainnya) secara dinamis langsung dari antarmuka panel setelan modul penyedia tanpa terhalang masker bulatan password bawaan peramban.
+
+## [2.97] - 2026-06-29
+### Fixed
+- **System Env Failover & Robust JSON Consolidation**:
+  - Menambahkan sirkuit kognitif cadangan (`Sistem Env Fallback`) pada `/src/core/kernel/ai/generateSegment.ts` agar secara otomatis beralih ke kunci API platform yang valid (`process.env.GEMINI_API_KEY`, berawalan `AIzaSy`) jika kunci `"AQ."` dari pengaturan batin mengalami kegagalan otentikasi HTTP 401 (ACCESS_TOKEN_TYPE_UNSUPPORTED).
+  - Mengimplementasikan pembersihan JSON tangguh (`regex replacement` untuk tag `<thought>` dan isolasi kurung siku) pada `/src/core/consolidator.ts` sehingga proses konsolidasi memori tidak akan pernah gagal saat menerima respons model penalaran yang menyertakan blok pemikiran/thought tags.
+
 ## [2.96] - 2026-06-29
 ### Fixed
 - **Dukungan Penuh API Key "AQ." dan Model Kustom Google AI Studio**:

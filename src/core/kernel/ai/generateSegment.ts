@@ -81,6 +81,23 @@ export async function generateContent(
       });
     }
 
+    // System Fallback: Platform's own valid GEMINI_API_KEY if different from primaryKey
+    const systemEnvKey = typeof window === 'undefined' ? (process.env.GEMINI_API_KEY || process.env.API_KEY) : undefined;
+    if (systemEnvKey && systemEnvKey.trim() !== '' && systemEnvKey !== primaryKey && !systemEnvKey.toLowerCase().includes('your_api_key')) {
+      attemptsToTry.push({
+        apiKey: systemEnvKey,
+        modelId: cleanModelId,
+        label: `Sistem Env Fallback (Env Key + Model ${cleanModelId})`
+      });
+      if (cleanFallbackModelId && cleanFallbackModelId !== cleanModelId) {
+        attemptsToTry.push({
+          apiKey: systemEnvKey,
+          modelId: cleanFallbackModelId,
+          label: `Sistem Env Fallback Cadangan (Env Key + Model ${cleanFallbackModelId})`
+        });
+      }
+    }
+
     // 3. Cadangan API: Key Cadangan + Model Utama
     if (fallbackKey && fallbackKey !== primaryKey) {
       attemptsToTry.push({

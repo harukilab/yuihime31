@@ -24,7 +24,7 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ logs, backgroundLogs, me
     .filter(m => {
       const isSystem = m.speaker === 'System' || m.context === 'cron_trigger';
       const isSocialMedia = m.context && (m.context.startsWith('tg_') || m.context.startsWith('dc_'));
-      const isOurContext = m.context === `web_${activeSessionId}` || m.context === activeSessionId || !m.context;
+      const isOurContext = m.context === `web_${activeSessionId}` || m.context === activeSessionId;
       return isOurContext && !isSocialMedia;
     })
     .map(m => ({

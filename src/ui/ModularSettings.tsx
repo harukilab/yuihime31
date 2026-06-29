@@ -3,7 +3,7 @@ import { SystemRegistry } from '../core/registry';
 import { StorageService } from '../drivers/storage';
 import { ModuleType } from '../include/types';
 import { CronManager } from './CronManager';
-import { ShieldAlert, LogIn, LogOut, Trash2, LineChart as ChartIcon, BarChart3, Save, RefreshCw, Layers, Cpu, Radio, Volume2, Zap, LayoutGrid, Settings2, Brain, Clock, Sparkles, MessageSquare, Palette, Monitor, Database, GitBranch, Activity, Terminal, CheckSquare, Mic, Eye, ClipboardList, Share2, Gamepad2, Server, Music, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, AlertTriangle, Play, Sliders, VolumeX, Search, Maximize2, Move, Heart, Info, Upload, Image as ImageIcon, Send, Globe } from 'lucide-react';
+import { ShieldAlert, LogIn, LogOut, Trash2, LineChart as ChartIcon, BarChart3, Save, RefreshCw, Layers, Cpu, Radio, Volume2, Zap, LayoutGrid, Settings2, Brain, Clock, Sparkles, MessageSquare, Palette, Monitor, Database, GitBranch, Activity, Terminal, CheckSquare, Mic, Eye, EyeOff, ClipboardList, Share2, Gamepad2, Server, Music, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, AlertTriangle, Play, Sliders, VolumeX, Search, Maximize2, Move, Heart, Info, Upload, Image as ImageIcon, Send, Globe } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
 import { HeuristicsTab } from './HeuristicsTab';
@@ -1629,6 +1629,7 @@ export const ModularSettings: React.FC<ModularSettingsProps> = ({
 
   const [dynamicOptionsMap, setDynamicOptionsMap] = useState<Record<string, Record<string, { label: string, value: any }[]>>>({});
   const [fetchingDynamic, setFetchingDynamic] = useState<Record<string, boolean>>({});
+  const [showPasswordFields, setShowPasswordFields] = useState<Record<string, boolean>>({});
 
   const [rowModelsMap, setRowModelsMap] = useState<Record<string, { label: string, value: string }[]>>({});
   const [fetchingRowKey, setFetchingRowKey] = useState<Record<string, boolean>>({});
@@ -1877,13 +1878,28 @@ export const ModularSettings: React.FC<ModularSettingsProps> = ({
                   themeColor="amber"
                 />
               ) : (
-                <ControlledTextInput 
-                  type={field.type === 'password' ? 'password' : field.type === 'number' ? 'number' : 'text'}
-                  value={(targetConfig[key] !== undefined ? targetConfig[key] : (field.default !== undefined ? field.default : '')).toString()}
-                  onChange={(val) => targetUpdateFn(key, field.type === 'number' ? parseFloat(val) : val)}
-                  className="w-full bg-[#111115] border border-white/5 rounded-xl px-3 py-2 text-base sm:text-xs text-white focus:border-cyan-500/50 outline-none placeholder:text-gray-600 font-mono"
-                  placeholder={field.description}
-                />
+                <div className="relative flex items-center w-full">
+                  <ControlledTextInput 
+                    type={field.type === 'password' ? (showPasswordFields[`${module.metadata.id}:${key}`] ? 'text' : 'password') : field.type === 'number' ? 'number' : 'text'}
+                    value={(targetConfig[key] !== undefined ? targetConfig[key] : (field.default !== undefined ? field.default : '')).toString()}
+                    onChange={(val) => targetUpdateFn(key, field.type === 'number' ? parseFloat(val) : val)}
+                    className="w-full bg-[#111115] border border-white/5 rounded-xl pl-3 pr-10 py-2 text-base sm:text-xs text-white focus:border-cyan-500/50 outline-none placeholder:text-gray-600 font-mono"
+                    placeholder={field.description}
+                  />
+                  {field.type === 'password' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetKey = `${module.metadata.id}:${key}`;
+                        setShowPasswordFields(prev => ({ ...prev, [targetKey]: !prev[targetKey] }));
+                      }}
+                      className="absolute right-3 text-white/40 hover:text-white/80 p-0.5 cursor-pointer focus:outline-none transition-colors"
+                      title={showPasswordFields[`${module.metadata.id}:${key}`] ? 'Hide Secret Key' : 'Show Secret Key'}
+                    >
+                      {showPasswordFields[`${module.metadata.id}:${key}`] ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
             {hasDynamicOptions && (

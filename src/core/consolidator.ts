@@ -31,7 +31,27 @@ export class Consolidator {
 
     try {
       const response = await cortex.thinkSimple(prompt, true);
-      const entries = JSON.parse(response);
+      
+      // Clean thinking blocks if any
+      let cleaned = response.replace(/<thought>[\s\S]*?<\/thought>/gi, '').trim();
+      
+      // Isolate JSON array
+      const startBracket = cleaned.indexOf('[');
+      const endBracket = cleaned.lastIndexOf(']');
+      if (startBracket !== -1 && endBracket !== -1 && endBracket > startBracket) {
+        cleaned = cleaned.substring(startBracket, endBracket + 1);
+      } else {
+        // Fallback to object matching if it returned a single object
+        const startObj = cleaned.indexOf('{');
+        const endObj = cleaned.lastIndexOf('}');
+        if (startObj !== -1 && endObj !== -1 && endObj > startObj) {
+          cleaned = `[${cleaned.substring(startObj, endObj + 1)}]`;
+        }
+      }
+      
+      cleaned = cleaned.replace(/```json/gi, '').replace(/```/gi, '').trim();
+      
+      const entries = JSON.parse(cleaned);
       
       for (const entry of entries) {
         await StorageService.appendHistory({
