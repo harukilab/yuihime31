@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-06-29T12:11:32.027Z",
+  "durationMs": 554,
+  "input": "Yui, gimana cuaca di Jakarta hari ini?",
+  "sender": "Kakak Test",
+  "response": "Neural path end.",
+  "status": "SUCCESS"
+}

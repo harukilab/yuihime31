@@ -1,6 +1,12 @@
 # YuiHime Project Updates Logs
 ---
 
+## [2.96] - 2026-06-29
+### Fixed
+- **Dukungan Penuh API Key "AQ." dan Model Kustom Google AI Studio**:
+  - Menghapus pembatasan awalan `"AQ."` pada pembacaan API Key di `/src/core/kernel/settings.ts` sehingga kunci terbaru dari Google AI Studio yang menggunakan format tersebut dapat dimuat dengan sempurna.
+  - Menghapus pemaksaan pengalihan model non-standar ke `"gemini-2.5-flash"` di `/src/core/kernel/ai/generateSegment.ts` dan `/src/drivers/ai-providers/GeminiProvider.ts`. Pengguna sekarang bebas menggunakan model kustom/valid pilihan mereka sendiri seperti `"gemma-4-31b-it"` langsung melalui antarmuka batin tanpa adanya pengalihan paksa.
+
 ## [2.95] - 2026-06-28
 ### Optimized
 - **Server-side Routes Modularization**: Mengekstrak Telegram routes ke `src/core/server/routes/telegramRoutes.ts` dan system routes ke `src/core/server/routes/systemRoutes.ts` untuk memecahkan server.ts menjadi modul yang lebih maintainable.

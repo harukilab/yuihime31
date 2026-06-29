@@ -207,16 +207,19 @@ export class SettingsManager {
     const providersTable = this.settings.providers || {};
     const geminiConf = providersTable.gemini || this.settings.gemini || {};
     const configKey = geminiConf.apiKey !== undefined ? geminiConf.apiKey : geminiConf.api_key;
-    if (configKey) return configKey;
+    
+    if (configKey && configKey.trim() !== '' && !configKey.toLowerCase().includes('your_api_key')) {
+      return configKey;
+    }
     
     if (typeof window !== 'undefined') return '';
 
     const envKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-    if (envKey) {
+    if (envKey && envKey.trim() !== '' && !envKey.toLowerCase().includes('your_api_key')) {
       console.warn('[KERNEL] Using fallback API Key from process.env. Migration to config.toml is recommended.');
       return envKey;
     }
     
-    return '';
+    return configKey || '';
   }
 }
