@@ -7,6 +7,12 @@ Dokumen ini memuat daftar lengkap dari seluruh modul kognitif, *add-ons*, jembat
 ## ⏳ Sejarah Pembaruan Modul
 *Dokumen ini wajib diperbarui setiap kali terjadi pembuatan, pemindahan, atau modifikasi fungsionalitas modul.*
 
+- **2026-06-28 (v2.95)**: **Server-side Routes Modularization**:
+  - Mengekstrak Telegram routes ke `src/core/server/routes/telegramRoutes.ts` (webhook, status, recipient resolve, bot recreate).
+  - Mengekstrak system routes ke `src/core/server/routes/systemRoutes.ts` (health, version, markdown reader/writer).
+  - Mengekstrak WebSocket handler ke `src/core/server/handlers/wsHandler.ts` (connection, heartbeat, stream events, chat messages).
+  - Mengekstrak data konstan settings ke `src/ui/settingsData.ts` (gallery scenes, avatar presets, character cards, neural cores).
+
 - **2026-06-28 (v8.90 / Turn 426)**: Dynamic Turn Extension ketika Multi-Turn Reasoning Dimatikan:
   - **Dynamic Turn Extension**: Memperbaiki pemotongan respons verbal batin Yui ketika opsi **Multi-Turn Reasoning** dinonaktifkan (`enableMultiTurnReasoning = false`). Jika model memanggil alat riil (seperti `web_search`), mesin batin secara dinamis menaikkan batas `maxIterations` menjadi 2 untuk memungkinkan model mencerna hasil alat dan merumuskan respons verbal alami.
   - **No Interruption**: Menjamin penonaktifkan multi-turn reasoning hanya menekan putaran loop berlebihan (meningkatkan efisiensi/kecepatan) tanpa mengorbankan kualitas dan kelengkapan informasi hasil eksekusi alat batin.

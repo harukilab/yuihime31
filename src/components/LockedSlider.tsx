@@ -31,7 +31,7 @@ export const LockedSlider: React.FC<LockedSliderProps> = ({
   const [isLocked, setIsLocked] = useState(true);
   const [typedValue, setTypedValue] = useState<string>(value.toString());
 
-  // Keep manual input value in sync when the external state updates (e.g. slider drag)
+  
   useEffect(() => {
     setTypedValue(value.toString());
   }, [value]);
@@ -51,14 +51,14 @@ export const LockedSlider: React.FC<LockedSliderProps> = ({
 
     const val = parseFloat(valStr);
     if (!isNaN(val)) {
-      // Clamp values dynamically to stay within limits
+      
       const clamped = Math.max(min, Math.min(max, val));
       onChange(clamped);
     }
   };
 
   const handleManualInputBlur = () => {
-    // On blur, normalize the input display to the finalized state value
+    
     setTypedValue(value.toString());
   };
 
@@ -93,7 +93,7 @@ export const LockedSlider: React.FC<LockedSliderProps> = ({
 
   return (
     <div className={`space-y-2.5 p-3.5 bg-black/35 border border-white/5 rounded-2xl transition-all duration-300 font-sans ${className}`}>
-      {/* Header Info & Lock Button */}
+      {}
       <div className="flex items-center justify-between gap-4">
         <div className="flex flex-col">
           {label && (
@@ -129,7 +129,7 @@ export const LockedSlider: React.FC<LockedSliderProps> = ({
         </button>
       </div>
 
-      {/* Slider Control Layout */}
+      {}
       <div className="flex items-center gap-3">
         <span className="text-[9px] font-mono text-white/25 select-none">{min}</span>
         
@@ -152,12 +152,12 @@ export const LockedSlider: React.FC<LockedSliderProps> = ({
         <span className="text-[9px] font-mono text-white/25 select-none">{max}</span>
       </div>
 
-      {/* Active Value Display & Manual Input */}
+      {}
       <div className="flex justify-between items-center text-[10px] font-mono pt-2 border-t border-white/[0.03]">
         <span className="text-[9px] text-white/35 uppercase tracking-widest">Active Scale:</span>
         
         <div className="flex items-center gap-2">
-          {/* Manual numeric overrides */}
+          {}
           <input
             type="number"
             min={min}

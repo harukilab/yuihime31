@@ -28,7 +28,7 @@ import { safeLocalStorage } from './core/safeStorage';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { SystemRegistry } from './core/registry';
 import { initializeCortexModules } from './core/RegistryInitializer';
-// Removed bottom navigation imports as navigation is now centralized inside Settings and Stage action toggles
+
 import { KnowledgeTab } from './ui/KnowledgeTab';
 import { ArchiveTab } from './ui/ArchiveTab';
 import { MemoryTab } from './ui/MemoryTab';
@@ -99,7 +99,7 @@ export default function App() {
     if (typeof document !== 'undefined') {
       const scale = uiScaleState / 100;
       
-      // Clean up legacy zoom properties
+      
       document.documentElement.style.zoom = '';
       document.body.style.zoom = '';
       
@@ -107,7 +107,7 @@ export default function App() {
       document.documentElement.style.backgroundColor = '#050505';
       document.body.style.backgroundColor = '#050505';
       
-      // Instantly dispatch the resize event so setVh is re-run with correct zoom ratio
+      
       window.dispatchEvent(new Event('resize'));
     }
   }, [uiScaleState]);
@@ -170,7 +170,7 @@ export default function App() {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [dreams, setDreams] = useState<Dream[]>([]);
   useEffect(() => {
-    // Correctly handle mobile viewport height
+    
     const setVh = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -186,7 +186,7 @@ export default function App() {
       
       setMemories([]);
       
-      // Reset the displayed chat log and clear corresponding layout states
+      
       setLogs([]);
       safeLocalStorage.removeItem('yuihime_logs');
       
@@ -239,7 +239,7 @@ export default function App() {
     };
   }, []);
 
-  // Capture all developer and browser console prints into Yuihime's Low-Level System Traces
+  
   useEffect(() => {
     const originalLog = console.log;
     const originalWarn = console.warn;
@@ -250,7 +250,7 @@ export default function App() {
 
     const createInterceptor = (original: Function, level: string) => {
       return (...args: any[]) => {
-        // ALWAYS fallback and print to actual standard developer console first
+        
         original.apply(console, args);
 
         if (isWithinInterceptor) return;
@@ -275,7 +275,7 @@ export default function App() {
 
           const trimmed = content.trim();
           if (trimmed) {
-            // Noise reduction filter for clean developer streams (skip vite status, hot reload, and custom event logs)
+            
             const isNoisy = trimmed.includes('[vite]') || 
                             trimmed.includes('websocket') || 
                             trimmed.includes('HMR') || 
@@ -287,11 +287,11 @@ export default function App() {
                             trimmed.includes('GL_PLATFORM');
 
             if (!isNoisy) {
-              // Completely silenced console logging to UI backgroundLogs as requested
+              
             }
           }
         } catch (e) {
-          // Absolute crash safety
+          
         } finally {
           isWithinInterceptor = false;
         }
@@ -303,7 +303,7 @@ export default function App() {
     console.error = createInterceptor(originalError, 'error');
     console.info = createInterceptor(originalInfo, 'info');
 
-    // Print startup banner to traces
+    
     console.info("Yuihime Core: Console interception active. Listening for low-level diagnostic traces.");
 
     return () => {
@@ -373,7 +373,7 @@ export default function App() {
     }
   }, [state]);
 
-  // Background Emotional Decay (Homeostasis)
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setState(prev => {
@@ -385,7 +385,7 @@ export default function App() {
           emotion: updatedEmotion
         };
       });
-    }, 60000); // Every minute
+    }, 60000); 
     return () => clearInterval(interval);
   }, [config]);
   const [ttsEnabled, setTtsEnabled] = useState(() => safeLocalStorage.parseJSON('yuihime_tts_enabled', true));
@@ -442,7 +442,7 @@ export default function App() {
     }
   }, [pulseEnabled]);
 
-  // Periodic Neural Circuit Telemetry Sync
+  
   useEffect(() => {
     const updateCircuits = () => {
       const cortex = getCortex();
@@ -462,7 +462,7 @@ export default function App() {
   const [speechVolume, setSpeechVolume] = useState(0);
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
-  // Sync with SpeechService for accurate avatar movement
+  
   useEffect(() => {
     const unsubSpeak = SpeechService.subscribe(setIsReallySpeaking);
     const unsubVolume = SpeechService.subscribeVolume(setSpeechVolume);
@@ -472,7 +472,7 @@ export default function App() {
     };
   }, []);
 
-  // Trigger pending speech input if Yui has finished speaking
+  
   useEffect(() => {
     if (!isReallySpeaking && pendingPrompt) {
       console.log("[SpeechInterruption] Yui finished speaking. Dispatching pending prompt:", pendingPrompt);
@@ -489,7 +489,7 @@ export default function App() {
     return safeLocalStorage.parseJSON('yuihime_llm_streaming_enabled', true);
   });
   const activeThinkControllerRef = useRef<AbortController | null>(null);
-  const [sleepModeTimeout, setSleepModeTimeout] = useState(300); // 300 seconds default (5 mins)
+  const [sleepModeTimeout, setSleepModeTimeout] = useState(300); 
   const [aiConfig, setAiConfigState] = useState<ProviderConfig>({ 
     provider: '', 
     model: '', 
@@ -531,7 +531,7 @@ export default function App() {
     localStorage.setItem('yuihime_show_mobile_nav', JSON.stringify(showMobileNav));
   }, [showMobileNav]);
 
-  // --- Live Stream Connection Event Broadcaster to OBS Overlay / Standalone Screens ---
+  
   useEffect(() => {
     const isStreamMode = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('mode') === 'stream';
     if (isStreamMode) return;
@@ -551,7 +551,7 @@ export default function App() {
           }
         })
       }).catch(() => {});
-    }, 150); // 150ms debounce to prevent spamming HTTP posts during rapid subtitle typing animations
+    }, 150); 
 
     return () => clearTimeout(timer);
   }, [state, activeSubtitle, typedSubtitle, isSubtitleTyping, animations]);
@@ -615,14 +615,14 @@ export default function App() {
     SpeechService.init();
     SpeechService.setEnabled(ttsEnabled);
     
-    // Initialize Modular Neural Registry
+    
     await initializeCortexModules();
 
-    // Register Puter tools with Cortex
+    
     try {
       const puterTools = PuterAdapter.registerPuterTools();
       
-      // Store tools in a way Cortex can access them
+      
       (globalThis as any).puterTools = puterTools;
       
       console.log("[SYSTEM] Puter tools registered:", puterTools.length);
@@ -630,7 +630,7 @@ export default function App() {
       console.warn("[SYSTEM] Failed to register Puter tools:", e);
     }
 
-    // Sync settings from server (config.toml and agent_state) to override local defaults
+    
     try {
       const serverSettings = await StorageService.getModularSettings();
       const currentConfig = await StorageService.getAIConfig();
@@ -686,21 +686,21 @@ export default function App() {
           ...savedState,
           status: 'idle'
         };
-        // Ensure emotion engine is synchronized with the base mood/relation on boot
+        
         merged.emotion = Soul.updateEmotion(prev.emotion, merged.mood, merged.relation);
         return merged;
       });
     }
 
-    // Initialize Modular API Framework
+    
     const caps = await StorageService.getCapabilities();
     await APIService.init(caps);
 
-    // Initialize Soul & Link to Cortex (Zenith Manifestation Core)
+    
     const soulInstance = new Soul(state);
     soulRef.current = soulInstance;
     
-    // Sync soul updates to React state
+    
     soulInstance.onUpdate((newState) => {
       setState(newState);
     });
@@ -709,12 +709,12 @@ export default function App() {
     cortex.setSoul(soulInstance);
     console.log("[SYSTEM] Neural link established: Soul synchronized with Cortex.");
 
-    // Initialize Puter Heartbeat (untuk keep-alive dan responsiveness)
+    
     const initializePuterHeartbeat = async () => {
       try {
         const puterObj = (globalThis as any).puter;
         if (typeof puterObj !== 'undefined' && puterObj && puterObj.auth) {
-          // Perform whoami check setiap 30 detik untuk maintain connection
+          
           setInterval(async () => {
             try {
               const user = await puterObj.auth.whoami();
@@ -722,7 +722,7 @@ export default function App() {
             } catch (e: any) {
               console.warn("[PUTER_HEARTBEAT] Puter not responding:", e.message);
             }
-          }, 30000); // Every 30 seconds
+          }, 30000); 
         }
       } catch (e) {
         console.error("[PUTER] Heartbeat initialization failed:", e);
@@ -732,7 +732,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Listen for background neural signals (Multitasking support)
+    
     const unsubscribe = eventBus.on('OUTPUT_EMITTED', (data: any) => {
       if (data.isInternal) {
         addLog('agent', data.response);
@@ -742,7 +742,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- WebSocket Synchronization Client for Multi-Platform Real-Time Sync ---
+  
   useEffect(() => {
     console.log("[APP_SYNC] Initializing real-time websocket synchronization link to Yuihime Daemon...");
     let isCleanup = false;
@@ -815,7 +815,7 @@ export default function App() {
       addLog('agent', "[SYSTEM] FATAL: Initialization protocol severed. Critical kernel failure detected.");
     });
 
-    // Anti-horizontal shift & viewport zoom locks for smooth mobile usage
+    
     const handleViewportFocusReset = () => {
       setTimeout(() => {
         if (window.scrollX !== 0) {
@@ -837,23 +837,23 @@ export default function App() {
     };
   }, []);
 
-  // --- Neural Background Cycles (Autonomous) ---
+  
   useEffect(() => {
     const neuralHeartbeat = setInterval(() => {
       if (state.status === 'sleeping') return;
 
-      // Rule 1: Auto-Dream (Consolidate memories if threshold reached)
+      
       const newMemoriesCount = memories.length - memoriesAtLastDream;
       if (newMemoriesCount >= LEARNING_THRESHOLD) {
         console.log("[SYSTEM] Autonomous Dream Cycle Triggered: Memory Threshold Exceeded");
         handleDream();
       } 
-      // Rule 2: Periodic Reflection (Reflect on knowledge if idle for a while)
-      else if (Math.random() > 0.8) { // 20% chance every check interval to keep it natural
+      
+      else if (Math.random() > 0.8) { 
          console.log("[SYSTEM] Autonomous Reflection Cycle Triggered: Routine Maintenance");
          handleReflect();
       }
-    }, 60000 * 5); // Check every 5 minutes
+    }, 60000 * 5); 
 
     return () => clearInterval(neuralHeartbeat);
   }, [memories, memoriesAtLastDream, state.status]);
@@ -864,22 +864,22 @@ export default function App() {
     window.location.reload();
   };
 
-  // Autonomous Background Cycles
+  
   useEffect(() => {
-    const AUTONOMOUS_INTERVAL = 1000 * 60 * 30; // 30 minutes
+    const AUTONOMOUS_INTERVAL = 1000 * 60 * 30; 
     
     const runMaintenance = async () => {
       if (state.status === 'sleeping') return;
       
       const newMemoriesCount = memories.length - memoriesAtLastDream;
       
-      // Auto-trigger dreaming if idle and thresholds met
+      
       if (newMemoriesCount >= (DREAM_THRESHOLD / 2)) {
         addLog('agent', "[SYSTEM] Initiating autonomous latent background cycle...");
         await handleDream();
       }
       
-      // Auto-trigger knowledge extraction if enough memories
+      
       if (memories.length % (LEARNING_THRESHOLD / 2) === 0 && memories.length > 0) {
         addLog('agent', "[SYSTEM] Initiating autonomous knowledge indexing...");
         await handleExtractKnowledge();
@@ -890,15 +890,15 @@ export default function App() {
     return () => clearInterval(interval);
   }, [memories.length, memoriesAtLastDream, state.status, knowledge.length]);
 
-  // Autonomous Activity: Deep Thoughts / Spontaneous Monologues / Sleep Mode
+  
   useEffect(() => {
-    const IDLE_CHECK_INTERVAL = 10000; // Check every 10 seconds
-    const IDLE_THRESHOLD = 1000 * 60 * 2; // 2 minutes
+    const IDLE_CHECK_INTERVAL = 10000; 
+    const IDLE_THRESHOLD = 1000 * 60 * 2; 
     
     const triggerIdleBehavior = async () => {
       const timeSinceLastInput = Date.now() - lastInteractionTime;
 
-      // 1. SLEEP MODE CHECK
+      
       if (sleepModeEnabled && timeSinceLastInput > (sleepModeTimeout * 1000)) {
         if (state.status !== 'sleeping' && !isThinking) {
           console.log("[SYSTEM] Entering Sleep Mode...");
@@ -911,10 +911,10 @@ export default function App() {
             console.warn("[SYSTEM] Failed to persist sleeping state on server", e);
           }
         }
-        return; // Skip monologues / background routines
+        return; 
       }
 
-      // If we are currently sleeping but the silent timer is inside limits (e.g. user action just happened), wake up!
+      
       if (state.status === 'sleeping' && timeSinceLastInput <= (sleepModeTimeout * 1000)) {
         console.log("[SYSTEM] Waking up from Sleep Mode...");
         addLog('agent', `[SYSTEM] Yuihime terbangun kembali dari mode tidur!`);
@@ -926,7 +926,7 @@ export default function App() {
         }
       }
       
-      // 2. SPONTANEOUS MONOLOGUE COGNITIVE LOOP
+      
       if (timeSinceLastInput > IDLE_THRESHOLD && !isThinking && state.status === 'idle') {
         console.log("[SYSTEM] Idle Monologue Triggered...");
         const idlePrompts = [
@@ -938,14 +938,14 @@ export default function App() {
         ];
         const randomPrompt = idlePrompts[Math.floor(Math.random() * idlePrompts.length)];
         
-        // Use a slightly different flow for monologue to avoid clearing input
+        
         setIsThinking(true);
         setReasoningIterations([]);
         setState(prev => ({ ...prev, status: 'learning' }));
 
         try {
           const currentActivePersona = NEURAL_CORES.find((c: any) => c.id === state.activePersonaId);
-          // Special system-driven think loop
+          
           const result = await getCortex().think(
             randomPrompt,
             memories,
@@ -963,7 +963,7 @@ export default function App() {
           
           setReasoningIterations(result.iterations || []);
           addLog('agent', puterCompatibleResult.response);
-          // Use a fresh array reference to ensure VTuberAvatar useEffect triggers
+          
           setAnimations([...(puterCompatibleResult.animations || [])]);
 
           const finalMood = Soul.updateMood(state.mood, result.nextMood);
@@ -990,7 +990,7 @@ export default function App() {
           setState(prev => ({ ...prev, status: 'idle' }));
         } finally {
           setIsThinking(false);
-          // Still mark as "last seen" so we don't spam
+          
           setLastInteractionTime(Date.now());
         }
       }
@@ -1002,11 +1002,11 @@ export default function App() {
 
   const [seenReminders, setSeenReminders] = useState<string[]>([]);
 
-  // Handle System Reminders
+  
   useEffect(() => {
     if (memories.length === 0) return;
     
-    // Look for reminders in memories
+    
     const systemReminders = memories.filter(m => 
       m.speaker === 'System' && 
       (m.content.includes('[REMINDER]:') || m.content.includes('[SYSTEM_SIGNAL]:')) &&
@@ -1017,7 +1017,7 @@ export default function App() {
     
     const lastMsg = systemReminders[systemReminders.length - 1];
     
-    // Filter to only recent reminders (within last 5 minutes) to prevent ancient reminders from popping up
+    
     if (lastMsg.timestamp < Date.now() - 300000) return;
 
     const triggerReminderReaction = async () => {
@@ -1053,7 +1053,7 @@ export default function App() {
     triggerReminderReaction();
   }, [memories.length, state.activePersonaId, seenReminders]);
 
-  // Persist State Changes
+  
   useEffect(() => {
     const timeout = setTimeout(() => {
       StorageService.saveAgentState({
@@ -1065,7 +1065,7 @@ export default function App() {
         activePersonaId: state.activePersonaId
       });
       localStorage.setItem('yuihime_active_persona', state.activePersonaId);
-    }, 5000); // Debounce save
+    }, 5000); 
     return () => clearTimeout(timeout);
   }, [state.mood, state.relation, state.systemHealth, state.lastDreamCycle, state.activePersonaId]);
 
@@ -1075,7 +1075,7 @@ export default function App() {
     }
   }, [logs]);
 
-  // Handle typing effect and auto-hiding for subtitles with movie-style chunking
+  
   useEffect(() => {
     if (!activeSubtitle) {
       setTypedSubtitle('');
@@ -1083,14 +1083,14 @@ export default function App() {
       return;
     }
 
-    // Direct stream tracking: do not type write, let the incoming text stream do it naturally
+    
     if (isStreamingRef.current) {
       setTypedSubtitle(activeSubtitle);
       setIsSubtitleTyping(true);
       return;
     }
 
-    const MAX_CHUNK_LENGTH = 85; // Roughly 2 lines of text
+    const MAX_CHUNK_LENGTH = 85; 
     const words = activeSubtitle.split(' ');
     const chunks: string[] = [];
     let currentChunk = "";
@@ -1105,7 +1105,7 @@ export default function App() {
     }
     if (currentChunk.trim()) chunks.push(currentChunk.trim());
 
-    // Calculate starting character index of each chunk in the full activeSubtitle
+    
     const chunkStartIndices: number[] = [];
     let cumulativeLength = 0;
     let searchStart = 0;
@@ -1121,7 +1121,7 @@ export default function App() {
     let isMounted = true;
     let fallbackTimeout: any = null;
 
-    // Trigger Speech if enabled and we are not already speaking
+    
     if (SpeechService.isEnabled() && !SpeechService.isSpeaking()) {
        SpeechService.speak(activeSubtitle, state.mood, state.tone);
     }
@@ -1133,7 +1133,7 @@ export default function App() {
       
       let lastProgressTime = Date.now();
 
-      // Failsafe timer: if no progress events trigger for 4 seconds, fallback to timer-based
+      
       const failsafeInterval = setInterval(() => {
         if (!isMounted) return;
         const timeSinceProgress = Date.now() - lastProgressTime;
@@ -1150,7 +1150,7 @@ export default function App() {
 
         if (charIndex === -1) {
           clearInterval(failsafeInterval);
-          // Speech completed; wait a brief moment then clear
+          
           fallbackTimeout = setTimeout(() => {
             if (isMounted) {
               setActiveSubtitle(null);
@@ -1159,7 +1159,7 @@ export default function App() {
           return;
         }
 
-        // Map global charIndex to the correct chunk
+        
         let activeChunkIdx = 0;
         for (let i = chunks.length - 1; i >= 0; i--) {
           if (chunkStartIndices[i] <= charIndex) {
@@ -1182,7 +1182,7 @@ export default function App() {
         if (fallbackTimeout) clearTimeout(fallbackTimeout);
       };
     } else {
-      // Fallback timer-based word-by-word typing (standard text-only or streaming fallback)
+      
       startTimerBasedRendering();
     }
 
@@ -1202,18 +1202,18 @@ export default function App() {
         setTypedSubtitle('');
         setIsSubtitleTyping(true);
 
-        // Typing effect word-by-word
+        
         for (let i = 0; i < chunkWords.length; i++) {
           if (!isMounted) return;
           setTypedSubtitle(chunkWords.slice(0, i + 1).join(' '));
-          await new Promise(resolve => setTimeout(resolve, 60)); // Faster typing for better feel
+          await new Promise(resolve => setTimeout(resolve, 60)); 
         }
 
         setIsSubtitleTyping(false);
         
-        // Reading time based on chunk length
+        
         const baseDelay = 1500;
-        const readingDelay = chunk.length * 30; // 30ms per character
+        const readingDelay = chunk.length * 30; 
         const delay = Math.min(6000, Math.max(baseDelay, readingDelay)); 
         
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -1232,13 +1232,13 @@ export default function App() {
     };
   }, [activeSubtitle]);
 
-  // Sync new agent responses to subtitles
+  
   useEffect(() => {
     const lastLog = logs[logs.length - 1];
     if (lastLog && lastLog.type === 'agent' && lastLog.content !== lastAgentResponse) {
       setLastAgentResponse(lastLog.content);
       
-      // FILTER: Only show clean dialogue to subtitles
+      
       const content = lastLog.content.trim();
       const isTechnical = content.startsWith('[') || 
                        content.startsWith('<') || 
@@ -1297,7 +1297,7 @@ export default function App() {
     });
   }, []);
 
-  // Process system signals / alarm triggers sequentially
+  
   useEffect(() => {
     if (systemSignalQueue.length > 0 && (state.status === 'idle' || state.status === 'sleeping')) {
       const nextSignal = systemSignalQueue[0];
@@ -1314,7 +1314,7 @@ export default function App() {
         
         try {
           const currentActivePersona = NEURAL_CORES.find((c: any) => c.id === state.activePersonaId);
-          // Auto-inject instruction for Yuihime persona response
+          
           const promptWithDirection = `${nextSignal} (Bicaralah dalam kepribadian asli Yuihime yang tsundere/imut secara langsung kepada Pengguna!)`;
           
           const result = await getCortex().think(
@@ -1338,7 +1338,7 @@ export default function App() {
           }
           setAnimations([...(puterCompatibleResult.animations || [])]);
           
-          // Fallback mood impact calculation
+          
           const sentimentImpact = result.sentiment !== undefined ? {
             joy: result.sentiment > 0.6 ? 2 : (result.sentiment < 0.4 ? -1 : 0),
             curiosity: 1,
@@ -1350,7 +1350,7 @@ export default function App() {
           const updatedRelation = Soul.updateRelation(state.relation, result.sentiment || 0.5, true);
           const updatedEmotion = Soul.updateEmotion(state.emotion, updatedMood, updatedRelation);
           
-          // Save memories
+          
           const savedMemories = await Promise.all(
             (result.newMemories || []).map((m: any) => StorageService.saveMemory({ 
               ...m, 
@@ -1387,9 +1387,9 @@ export default function App() {
     }
   }, [systemSignalQueue, state.status, state.activePersonaId, state.mood, state.relation, state.emotion, state.heuristics, state.currentPlan, memories, dreams, capabilities, perceivedName, identities]);
 
-  // Live Sync Loop for Stream Overlay and Real-time Updates
+  
   useEffect(() => {
-    const SYNC_INTERVAL = 5000; // 5 seconds
+    const SYNC_INTERVAL = 5000; 
     
     const sync = async () => {
       try {
@@ -1403,10 +1403,10 @@ export default function App() {
           StorageService.getKnowledge()
         ]);
         
-        // Only update if there are actually new memories or changes
+        
         const hasChanges = m.length !== memories.length || m.some((msg, idx) => memories[idx]?.id !== msg.id);
         if (hasChanges) {
-          // Find actual new memories (present in m, but not in memories state)
+          
           const newMessages = m.filter(msg => !memories.some(existing => existing.id === msg.id));
           
           setMemories(m);
@@ -1421,7 +1421,7 @@ export default function App() {
             } else if (msg.speaker === 'System' && msg.context === 'cron_trigger') {
               triggerSystemSignal(msg.content);
             } else if (msg.speaker !== 'agent' && msg.speaker !== 'System') {
-              // User message from private/group telegram, local socket, discord etc. Reset last seen seen timer
+              
               setLastInteractionTime(Date.now());
             }
           });
@@ -1433,7 +1433,7 @@ export default function App() {
             ...s,
             heuristics: strat,
             knowledge: k,
-            status: prev.status === 'idle' ? s.status : prev.status // Don't interrupt local active states
+            status: prev.status === 'idle' ? s.status : prev.status 
           }));
         }
 
@@ -1453,7 +1453,7 @@ export default function App() {
           setMetricsHistory(h);
         }
       } catch (e: any) {
-        // Only log if it's not a generic network failure (Expected during dev server restarts)
+        
         if (e.message !== 'Failed to fetch') {
           console.error("Live Sync Failed:", e);
         }
@@ -1504,7 +1504,7 @@ export default function App() {
      }
   };
 
-  // Selaraskan memori obrolan secara instan saat terjadi perpindahan Sesi ID aktif
+  
   useEffect(() => {
     if (activeSessionId) {
       loadData();
@@ -1550,29 +1550,29 @@ export default function App() {
 
     const isSystemCommand = activeInput.trim().startsWith('/');
 
-    // Interruption / Speech Interruption Mode Handler
+    
     const yuiIsSpeaking = isReallySpeaking || (SpeechService && typeof SpeechService.isSpeaking === 'function' && SpeechService.isSpeaking());
 
     if (!isSystemCommand && yuiIsSpeaking && speechInterruptionMode === 'manual') {
       const isStopWord = isCancellationPhrase(activeInput);
       if (isStopWord) {
-        // Clear any delayed execution and stop speaking immediately
+        
         setPendingPrompt(null);
         if (SpeechService) {
           try { SpeechService.stop(); } catch (err) {}
         }
       } else {
-        // Queue/delay the prompt until she finishes speaking, so she can finish her long speech
+        
         console.log("[SpeechInterruption] Manual Mode: Queueing user comment:", activeInput);
         if (!isDelayedRun) {
           addLog('user', activeInput);
           setInput('');
           setPendingPrompt(activeInput);
         }
-        return; // Halt execution so speaking continues uninterrupted
+        return; 
       }
     } else {
-      // Default Mode 2: any normal message immediately interrupts Yui
+      
       if (!isSystemCommand && SpeechService) {
         try { SpeechService.stop(); } catch (err) {}
       }
@@ -1699,7 +1699,7 @@ export default function App() {
         context: `web_${activeSessionId}`
       } as any);
       
-      // Definisikan kumpulan memori teraktual termasuk pesan pengirim yang baru saja dikirim demi menghindari React Stale State Closure bug
+      
       const currentMemories = [...memories, inputMemory];
       setMemories(currentMemories);
 
@@ -1761,7 +1761,7 @@ export default function App() {
         }
       };
 
-      // ✅ Pre-processing step: enforce strict JSON-only response constraint and prevent conversational text in the first pass of the chain
+      
       let processedMessageForCortex = userMessage;
       if (!isSystemCommand) {
         processedMessageForCortex = `${userMessage}\n\n[PRE-PROCESS: ENFORCE_JSON_ONLY]`;
@@ -1799,7 +1799,7 @@ export default function App() {
               const isJsonFormat = processedContent.startsWith('{') || processedContent.includes('"thought') || processedContent.includes('"speech') || processedContent.includes('"final_answer');
               
               if (isJsonFormat) {
-                // Try to extract thoughts using regex matching JSON keys
+                
                 const thoughtsRegex = /"(thoughts|thought)"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g;
                 let tMatch;
                 while ((tMatch = thoughtsRegex.exec(processedContent)) !== null) {
@@ -1810,7 +1810,7 @@ export default function App() {
                   }
                 }
                 
-                // Try to extract speech/final_answer/response
+                
                 const speechRegex = /"(speech|final_answer|response)"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g;
                 let sMatch;
                 let extractedSpeech = "";
@@ -1825,7 +1825,7 @@ export default function App() {
                 if (extractedSpeech) {
                   processedContent = extractedSpeech;
                 } else {
-                  processedContent = ""; // Keep clean of raw JSON structure
+                  processedContent = ""; 
                 }
               } else {
                 const thoughtMatch = processedContent.match(/<thought>([\s\S]*?)<\/thought>/i);
@@ -1850,7 +1850,7 @@ export default function App() {
 
       isStreamingRef.current = false;
 
-      // Flush any remaining text left in spokenBuffer
+      
       if (spokenBuffer.trim().length > 0) {
         sentenceQueue.push(spokenBuffer.trim());
         if (!isQueueProcessing) {
@@ -1858,15 +1858,15 @@ export default function App() {
         }
       }
       
-      // ✅ Adapt Cortex response to Puter format
+      
       const puterCompatibleResult = PuterAdapter.adaptCortexToPuter(result);
       
       const latency = Date.now() - startTime;
       
-      // Update Reasoning Trace
+      
       setReasoningIterations(result.iterations || []);
       
-      // Handle Identity Updates
+      
       if (result.perceivedNameUpdate && result.perceivedNameUpdate !== perceivedName) {
         setIdentity(result.perceivedNameUpdate);
       }
@@ -1906,7 +1906,7 @@ export default function App() {
         });
       }
       
-      // Log performance
+      
       const newMetric: PerformanceMetric = {
         operation: 'think',
         latency,
@@ -1917,8 +1917,8 @@ export default function App() {
       await StorageService.logPerformance(newMetric);
       setMetricsHistory(prev => [...prev, newMetric]);
       
-      // Direct Soul reflex update
-      // Fallback: If AI fails to provide mood impact, generate a micro-reflex based on sentiment
+      
+      
       const sentimentImpact = result.sentiment !== undefined ? {
         joy: result.sentiment > 0.6 ? 2 : (result.sentiment < 0.4 ? -1 : 0),
         curiosity: 1,
@@ -1930,7 +1930,7 @@ export default function App() {
       const updatedRelation = Soul.updateRelation(state.relation, result.sentiment || 0.5, true);
       const updatedEmotion = Soul.updateEmotion(state.emotion, updatedMood, updatedRelation);
       
-      // Update Neural Weights (Q-Table)
+      
       try {
         const currentQTable = await StorageService.getCustom('yuihime_q_table') || {};
         const stateKey = Soul.getDominantEmotion(updatedMood).toUpperCase();
@@ -1947,7 +1947,7 @@ export default function App() {
         console.warn("[SYSTEM] Q-Table sync failed", qErr);
       }
 
-      // Save memories
+      
       const savedMemories = await Promise.all(
         (result.newMemories || []).map((m: any) => StorageService.saveMemory({ 
           ...m, 
@@ -1963,7 +1963,7 @@ export default function App() {
       setAnimations([...(puterCompatibleResult.animations || [])]);
       setReasoningIterations(result.iterations || []);
       
-      // Handle Puter actions if any
+      
       if (puterCompatibleResult.actions && puterCompatibleResult.actions.length > 0) {
         for (const action of puterCompatibleResult.actions) {
           console.log('[PUTER_ACTION]', action.type, action);
@@ -1982,7 +1982,7 @@ export default function App() {
         }
       }
       
-      // Handle Actions (External API calls)
+      
       if (result.actions && result.actions.length > 0) {
         addLog('agent', `[SYSTEM] Processing ${result.actions.length} external cognitive hooks...`);
         
@@ -1995,7 +1995,7 @@ export default function App() {
               const apiResult = await APIService.call(cap, endpoint, action.params, state);
               addLog('agent', `[ACTION] Success: ${cap.name} response synthesized.`);
               
-              // Feed result back into memories
+              
               const actionMemory = await StorageService.saveMemory({
                 type: 'interaction',
                 content: `Action Result from ${cap.name}: ${JSON.stringify(apiResult).substring(0, 500)}...`,
@@ -2022,7 +2022,7 @@ export default function App() {
         }
       }
 
-      // Explicitly add response to dialogue logs if it exists and isn't empty
+      
       if (puterCompatibleResult.response && puterCompatibleResult.response.trim()) {
         const cleanResponse = puterCompatibleResult.response.trim();
         const normResponse = normalizeForComparison(cleanResponse);
@@ -2041,7 +2041,7 @@ export default function App() {
                 isStreaming: false
               };
             } else {
-              // Fallback
+              
               updated.push({
                 type: 'agent',
                 content: cleanResponse,
@@ -2058,7 +2058,7 @@ export default function App() {
         }
         activeSessionLogs.add(normResponse);
       } else {
-        // If there is no verbal speech output but streaming was active, cleanly close/finalize the streaming block
+        
         if (llmStreamingEnabled) {
           setLogs(prev => {
             const updated = [...prev];
@@ -2069,7 +2069,7 @@ export default function App() {
             if (streamIndex !== undefined && streamIndex !== -1) {
               const computedThoughts = result.thought || (result as any).thoughts;
               if (computedThoughts) {
-                // Finalize the item, keep empty speech content but attach the extracted thoughts
+                
                 updated[streamIndex] = {
                   ...updated[streamIndex],
                   content: "",
@@ -2077,7 +2077,7 @@ export default function App() {
                   isStreaming: false
                 };
               } else {
-                // If there are no thoughts, remove the temporary streaming item completely
+                
                 updated.splice(streamIndex, 1);
               }
             }
@@ -2086,7 +2086,7 @@ export default function App() {
         }
       }
 
-      // Handle Logs (Internal background traces) - completely deduplicated
+      
       if (result.logs && result.logs.length > 0) {
         result.logs.forEach(log => {
           const trimmedLog = log.trim();
@@ -2094,7 +2094,7 @@ export default function App() {
           
           const normLog = normalizeForComparison(trimmedLog);
           
-          // Skip if this log line is highly similar/identical to the main speech response to prevent duplicate display
+          
           if (normLog === normalizeForComparison(puterCompatibleResult.response || '')) return;
           if (activeSessionLogs.has(normLog)) return;
           
@@ -2103,7 +2103,7 @@ export default function App() {
         });
       }
       
-      // Final Single State Update
+      
       setState(prev => ({ 
         ...prev, 
         status: 'idle',
@@ -2120,13 +2120,13 @@ export default function App() {
         }
       }));
       
-      // Auto-trigger dreaming if threshold is reached
+      
       const newMemoriesCount = updatedMemories.length - memoriesAtLastDream;
       if (result.shouldStartDreaming || newMemoriesCount >= DREAM_THRESHOLD) {
         handleDream(updatedMemories);
       }
 
-      // Auto-trigger optimization
+      
       if (updatedMemories.length % LEARNING_THRESHOLD === 0) {
         handleOptimize();
       }
@@ -2188,18 +2188,18 @@ export default function App() {
     setState(prev => ({ ...prev, status: 'dreaming' }));
     addLog('agent', "[SYSTEM] Entering deep latent state. Reflecting on history...");
     try {
-      // Stage 1: Consolidate short-term into history.jsonl if needed
+      
       await Consolidator.run(getCortex(), currentMemories);
       
-      // Stage 2: Synthesis Knowledge from history
+      
       const { reflections } = await DreamEngine.startCycle(getCortex(), state);
       
       setMemoriesAtLastDream(currentMemories.length);
       addLog('agent', `[DREAM_REFLEX] ${reflections}`);
       
-      // Update local dreams state if we still use the old type, 
-      // but the new system uses .md files. 
-      // We'll keep it for UI compatibility:
+      
+      
+      
       const d = await StorageService.getDreams();
       setDreams(d);
     } catch (error) {
@@ -2229,11 +2229,11 @@ export default function App() {
       addLog('agent', `[MODERATOR] Selected Message: "${selectedMessage?.text}" from ${selectedMessage?.user}. Summary of others: ${contextSummary}. Action: ${action}. Reason: ${reasoning}`);
       
       if (selectedMessage) {
-        // Inject into normal thought process
+        
         const virtualEvent = { preventDefault: () => {} } as React.FormEvent;
         setInput(selectedMessage.text);
-        // We will call handleThink manually but we need to wait for state update. Use direct call:
-        // Actually, easiest is just to set input and let user press Enter, or directly call
+        
+        
         setTimeout(() => {
           const formSubmitBtn = document.querySelector('form button[type="submit"]') as HTMLButtonElement;
           formSubmitBtn?.click();
@@ -2255,13 +2255,13 @@ export default function App() {
       const startTime = Date.now();
       const consolidatedDreams = await getCortex().consolidateDreams(dreams);
       
-      // Update with new set
+      
       await StorageService.saveDreams(consolidatedDreams);
       setDreams(consolidatedDreams);
       
       addLog('agent', `[SYSTEM] Neural optimization complete. Consolidated ${dreams.length} concepts into ${consolidatedDreams.length}.`);
       
-      // Log performance
+      
       await StorageService.logPerformance({
         operation: 'consolidate',
         latency: Date.now() - startTime,
@@ -2290,7 +2290,7 @@ export default function App() {
       
       addLog('agent', `[SYSTEM] Knowledge base updated. Extracted ${updatedKnowledge.length} core concepts.`);
       
-      // Extraction costs energy and might cause stress
+      
       setState(prev => ({
         ...prev,
         energy: Math.max(0, prev.energy - 10),
@@ -2336,7 +2336,7 @@ export default function App() {
       const puterCompatibleResult = PuterAdapter.adaptCortexToPuter(result);
       addLog('agent', `[MEMORY_ECHO_REFLEX]\n${puterCompatibleResult.response}`);
       
-      // Reflection increases joy and curiosity but costs energy
+      
       let updatedMood = Soul.updateMood(state.mood, { joy: 5, irritation: -5 });
       updatedMood = Soul.applyInhibition(updatedMood);
       const updatedRelation = Soul.updateRelation(state.relation, 0.5, true);
@@ -2362,7 +2362,7 @@ export default function App() {
     }
   };
 
-  // Check for stream/OBS overlay mode in URL
+  
   const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const urlMode = searchParams.get('mode');
   const isStreamMode = urlMode === 'stream';
@@ -2418,9 +2418,9 @@ export default function App() {
       <div className="scanline" />
 
         <main className="flex-1 flex overflow-hidden relative">
-          {/* Sidebar removed to unify mobile bottom navigation on PC, Tablet, and Mobile */}
+          {}
           
-          {/* Content Area */}
+          {}
           <section className="flex-1 flex flex-col relative overflow-hidden bg-[#050505]">
             <AnimatePresence mode="wait">
               <motion.div
@@ -2434,7 +2434,7 @@ export default function App() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Neural Avatar Rendering - Interaction Layer above background widgets but below main HUD */}
+            {}
             <div className={`absolute inset-0 z-30 flex items-center justify-center pointer-events-none overflow-hidden transition-opacity duration-500 ${activeTab === 'stage' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               {activeTab === 'stage' && (
                 <VTuberAvatar 
@@ -2553,7 +2553,7 @@ export default function App() {
                 neuralCircuitStatus={neuralCircuitStatus}
                 pulseEnabled={pulseEnabled}
                 setPulseEnabled={setPulseEnabled}
-                // Soul tab props
+                
                 heuristics={state.heuristics}
                 handleOptimize={handleOptimize}
                 isLearning={isLearning}
@@ -2565,7 +2565,7 @@ export default function App() {
                 isThinking={isThinking}
                 logs={logs}
                 state={state}
-                // Newly integrated parameters
+                
                 memories={memories}
                 setMemories={setMemories}
                 dreams={dreams}
@@ -2578,7 +2578,7 @@ export default function App() {
                 showSystemLogs={showSystemLogs}
                 setShowSystemLogs={setShowSystemLogs}
                 reasoningIterations={reasoningIterations}
-                // Console interaction properties
+                
                 activeSubtitle={activeSubtitle}
                 typedSubtitle={typedSubtitle}
                 isSubtitleTyping={isSubtitleTyping}
@@ -2608,7 +2608,7 @@ export default function App() {
         </section>
       </main>
 
-      {/* Centralized Navigation is handled beautifully within the Live Stage and Modular Settings dashboard */}
+      {}
     </div>
   </BugReportBoundary>
 );

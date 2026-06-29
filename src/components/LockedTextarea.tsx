@@ -25,7 +25,7 @@ export const LockedTextarea: React.FC<LockedTextareaProps> = ({
   const [isFocused, setIsFocused] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Sync with outer changes when not focused/locked
+  
   useEffect(() => {
     if (!isFocused) {
       setLocalVal(value);
@@ -44,7 +44,7 @@ export const LockedTextarea: React.FC<LockedTextareaProps> = ({
 
   return (
     <div className={`space-y-2 p-4 bg-black/35 border border-white/5 rounded-2xl transition-all duration-300 font-sans ${className}`}>
-      {/* Header controls: Lock/Unlock + Copy */}
+      {}
       <div className="flex items-center justify-between gap-4">
         <div className="flex flex-col flex-1">
           {label && (
@@ -60,7 +60,7 @@ export const LockedTextarea: React.FC<LockedTextareaProps> = ({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* Copy Button */}
+          {}
           <button
             type="button"
             onClick={handleCopy}
@@ -80,7 +80,7 @@ export const LockedTextarea: React.FC<LockedTextareaProps> = ({
             )}
           </button>
 
-          {/* Lock / Unlock Toggle */}
+          {}
           <button
             type="button"
             onClick={() => setIsLocked(!isLocked)}
@@ -105,7 +105,7 @@ export const LockedTextarea: React.FC<LockedTextareaProps> = ({
         </div>
       </div>
 
-      {/* Textarea Workspace */}
+      {}
       <div className="relative">
         <textarea
           rows={rows}

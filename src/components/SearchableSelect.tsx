@@ -31,7 +31,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Close dropdown when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -44,7 +44,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     };
   }, []);
 
-  // Autofocus the search input when the dropdown opens (only on non-mobile/non-touch devices)
+  
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
       const isMobileOrTouch = 
@@ -61,12 +61,12 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     }
   }, [isOpen]);
 
-  // Find currently selected option object
+  
   const selectedOption = useMemo(() => {
     return options.find(opt => opt.value === value) || null;
   }, [value, options]);
 
-  // Filter options based on search query (fuzzy search)
+  
   const filteredOptions = useMemo(() => {
     if (!searchQuery.trim()) return options;
     const cleanQuery = searchQuery.toLowerCase().trim();
@@ -76,7 +76,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     );
   }, [searchQuery, options]);
 
-  // Handle selecting an option
+  
   const handleSelect = (val: string) => {
     onChange(val);
     setIsOpen(false);
@@ -86,7 +86,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   return (
     <div ref={containerRef} className="relative w-full font-sans">
-      {/* Trigger Button */}
+      {}
       <button
         type="button"
         disabled={disabled}
@@ -107,7 +107,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         />
       </button>
 
-      {/* Popover Dropdown */}
+      {}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -118,7 +118,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             className={`absolute z-50 left-0 right-0 mt-1.5 bg-[#0e0e14]/95 border border-white/10 rounded-xl shadow-[0_12px_36px_rgba(0,0,0,0.7)] backdrop-blur-md overflow-hidden ${dropdownClassName}`}
             style={{ minWidth: '100%' }}
           >
-            {/* Live-Search Bar */}
+            {}
             {hasSearch && (
               <div className="relative border-b border-white/5 p-2">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={12} />
@@ -142,7 +142,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               </div>
             )}
 
-            {/* List options */}
+            {}
             <div className="max-h-56 overflow-y-auto py-1 scrollbar-thin select-none">
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((opt) => {

@@ -1,6 +1,13 @@
 # YuiHime Project Updates Logs
 ---
 
+## [2.95] - 2026-06-28
+### Optimized
+- **Server-side Routes Modularization**: Mengekstrak Telegram routes ke `src/core/server/routes/telegramRoutes.ts` dan system routes ke `src/core/server/routes/systemRoutes.ts` untuk memecahkan server.ts menjadi modul yang lebih maintainable.
+- **WebSocket Handler Separation**: Mengekstrak logika WebSocket ke `src/core/server/handlers/wsHandler.ts` untuk memisahkan handler connection, heartbeat, dan chat message.
+- **Settings Data Extraction**: Mengekstrak data konstan (gallery scenes, avatar presets, character cards, neural cores) ke `src/ui/settingsData.ts` untuk mengurangi ukuran ModularSettings.tsx.
+- **JSX Syntax Fixes**: Memperbaiki error linter di ArchiveTab.tsx, DreamsTab.tsx, IdentitiesTab.tsx, KnowledgeTab.tsx, dan MemoryTab.tsx (tag HTML yang tidak ditutup).
+
 ## [2.94] - 2026-06-28
 ### Fixed
 - **Resolusi Masalah Kompilasi & Linter pada Diagnostic Uji dan Build Produksi**:

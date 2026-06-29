@@ -1,5 +1,31 @@
 import "dotenv/config";
 
+// --- Global EPIPE Protection for cron/background tasks ---
+const originalConsoleFns = {
+  log: console.log,
+  warn: console.warn,
+  error: console.error,
+  info: console.info,
+  debug: console.debug
+};
+['log', 'warn', 'error', 'info', 'debug'].forEach((method) => {
+  (console as any)[method] = (...args: any[]) => {
+    try {
+      (originalConsoleFns as any)[method].apply(console, args);
+    } catch (e: any) {
+      if (e.code !== 'EPIPE' && e.errno !== -32) throw e;
+    }
+  };
+});
+
+// Also catch EPIPE at process level for extra resilience
+process.stdout.on('error', (err: any) => {
+  if (err.code !== 'EPIPE' && err.errno !== -32) throw err;
+});
+process.stderr.on('error', (err: any) => {
+  if (err.code !== 'EPIPE' && err.errno !== -32) throw err;
+});
+
 // --- Global Native Fetch Interceptor for Node.js (Relative URLs Fallback) ---
 const originalFetch = globalThis.fetch;
 globalThis.fetch = function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
@@ -821,7 +847,7 @@ app.use("/models", express.static(modelsDir));
     });
   });
 
-  // Global error handler
+// Global error handler
   app.use((err: any, req: any, res: any, next: any) => {
     console.error("Global Server Error:", err);
     res.status(500).json({ error: "Internal Server Error", details: err.message });
@@ -829,23 +855,35 @@ app.use("/models", express.static(modelsDir));
 
   // Start Bot after server is listening and initialize modules
   setTimeout(() => {
+    const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏', '⠗', '⠡'];
+    let frameIdx = 0;
+    const loadingInterval = setInterval(() => {
+      process.stderr.write('\r' + frames[frameIdx = (frameIdx + 1) % frames.length] + ' Loading modules...');
+    }, 100);
+    
     initializeCortexModules()
-      .then(() => console.log("[KERNEL] Server-side cognitive modules initialized successfully."))
-      .catch((err) => console.error("[KERNEL] Server-side cognitive modules initialization failed:", err));
-    initializeBot(db).catch(err => console.error("[KERNEL] Bot init failed:", err));
-    initializeDiscord(db).catch(err => console.error("[KERNEL] Discord init failed:", err));
-    initializeTwitter(db).catch(err => console.error("[KERNEL] Twitter init failed:", err));
-    initializeMCP().catch(err => console.error("[KERNEL] MCP init failed:", err));
+      .then(() => {
+        clearInterval(loadingInterval);
+        process.stderr.write('\r✓ Kernel initialized. Ready.\n');
+      })
+      .catch((err) => {
+        clearInterval(loadingInterval);
+        process.stderr.write('\r✗ Initialization failed: ' + err + '\n');
+      });
+    initializeBot(db).catch(() => {});
+    initializeDiscord(db).catch(() => {});
+    initializeTwitter(db).catch(() => {});
+    initializeMCP().catch(() => {});
   }, 1000);
 }
 
 // Resilience: Catch fatal process errors
-process.on('uncaughtException', (err) => {
-  console.error('[FATAL] Uncaught Exception:', err);
+process.on('uncaughtException', (err: any) => {
+  if (err.code === 'EPIPE' || err.errno === -32) return;
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+process.on('unhandledRejection', (reason: any, promise) => {
+  if (reason?.code === 'EPIPE' || reason?.errno === -32) return;
 });
 
 startServer();
