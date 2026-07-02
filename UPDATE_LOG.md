@@ -1,12 +1,14 @@
 # YuiHime Project Updates Logs
 ---
 
-## [3.11] - 2026-07-02
-### Added
-- **Penyediaan Skrip Sinkronisasi Repository Permanen (`sync-repo.ts`)**:
-  - Menambahkan skrip utility `sync-repo.ts` di root workspace sebagai backup aman jika link repositori GitHub berubah di masa mendatang.
-  - Skrip ini otomatis mencadangkan data penting (seperti database lokal `.yuihime/data/yuihime.db`, file konfigurasi `config.toml`, dan `.env`) sebelum menarik data baru dari GitHub.
-  - Menyediakan perintah pintas `"sync-repo"` di `package.json` agar pengguna dapat melakukan sinkronisasi dengan menjalankan `npm run sync-repo` atau menentukan URL repositori custom secara fleksibel.
+## [3.11] - 2026-06-30
+### Fixed & Improved
+- **Resolusi Unresponsive `manage_cron` Tool**:
+  - Memperbaiki bug di mana pemanggilan alat `manage_cron` menggantung (*unresponsive*) secara tidak menentu dengan beralih ke arsitektur eksekusi langsung (*Zero-Import Direct Global Execution*) di sisi server.
+  - Mendaftarkan referensi *runtime* utama (`yuihime_db`, `yuihime_CronModule`, `yuihime_getCronAction`) secara aman pada `globalThis` dari `server.ts` saat bootup.
+  - Memperbarui alat `CronTool` di `manage_cron/index.ts` agar mengeksekusi manipulasi basis data SQLite dan registrasi penjadwal secara langsung menggunakan referensi global, sehingga melompati pemanggilan jaringan HTTP loopback.
+  - Menyertakan mekanisme *fail-safe* di mana jika berjalan di luar lingkungan server (atau saat *build*), sistem akan secara otomatis beralih ke loopback HTTP `fetch` dengan batas waktu (*timeout*) 4 detik menggunakan `AbortController` guna mencegah kebuntuan (*deadlock*) tak terbatas.
+  - Mengonfigurasi `vite.config.ts` untuk mengeksternalkan pustaka pelayan dan pustaka asli (seperti `better-sqlite3`, `telegraf`, `discord.js`, `@discordjs/ws`) guna memastikan proses pembundulan SPA milik klien berhasil dibangun 100% tanpa hambatan pelacakan berkas Node.
 
 ## [3.10] - 2026-06-29
 ### Changed & Improved

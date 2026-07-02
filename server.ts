@@ -242,6 +242,18 @@ import { initializeDatabase, setupSchema, dbPath } from "./src/core/database.js"
 const db = initializeDatabase();
 setupSchema(db);
 
+// Register on globalThis for plug-and-play tools zero-import runtime access
+(globalThis as any).yuihime_db = db;
+(globalThis as any).yuihime_initializeDatabase = initializeDatabase;
+(globalThis as any).yuihime_CronModule = CronModule;
+try {
+  import("./src/core/server/apiRouter.js").then((mod) => {
+    (globalThis as any).yuihime_getCronAction = mod.getCronAction;
+  }).catch((err) => {
+    console.warn("[SERVER] Failed to dynamically assign getCronAction to globalThis:", err.message);
+  });
+} catch (_) {}
+
 // Ensure the singleton agent_state row with ID = 1 exists
 try {
   db.prepare(`

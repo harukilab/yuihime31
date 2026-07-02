@@ -68,6 +68,7 @@ export default function App() {
   const cortexRef = useRef<Cortex | null>(null);
   const soulRef = useRef<Soul | null>(null);
   const isStreamingRef = useRef(false);
+  const isProcessingRef = useRef(false);
   const prevActiveSessionIdRef = useRef<string | null>(null);
 
   const [showDebugPanel, setShowDebugPanel] = useState(() => safeLocalStorage.parseJSON('yuihime_debug_panel', false));
@@ -1719,6 +1720,18 @@ export default function App() {
 
     const activeSessionLogs = new Set<string>(logs.map(l => normalizeForComparison(l.content)));
 
+    if (isProcessingRef.current) {
+      console.log("[CORTEX] Guard: already processing an input synchronously. Ignoring duplicate request.");
+      return;
+    }
+
+    if (isThinking) {
+      console.log("[CORTEX] Guard: currently thinking. Ignoring duplicate submission.");
+      return;
+    }
+
+    isProcessingRef.current = true;
+
     const userMessage = activeInput;
     const currentAttachments = [...attachments];
     if (!isDelayedRun) {
@@ -2245,6 +2258,7 @@ export default function App() {
       }));
     } finally {
       setIsThinking(false);
+      isProcessingRef.current = false;
       activeThinkControllerRef.current = null;
     }
   };

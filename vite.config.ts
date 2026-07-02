@@ -29,5 +29,20 @@ export default defineConfig(({mode}) => {
         ]
       },
     },
+    build: {
+      rollupOptions: {
+        external: [
+          'better-sqlite3',
+          'smol-toml',
+          'telegraf',
+          'discord.js',
+          '@discordjs/ws',
+          'express',
+          'zlib-sync',
+          'bufferutil',
+          'utf-8-validate'
+        ]
+      }
+    }
   };
 });
