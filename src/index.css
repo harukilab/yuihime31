@@ -42,13 +42,33 @@
   html, body {
     width: 100%;
     height: 100%;
-    overflow: hidden;
+    overflow: clip !important;
+    overflow-x: clip !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
   }
 
   #root {
     width: 100%;
     height: 100%;
-    overflow: visible;
+    overflow: clip !important;
+    overflow-x: clip !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  #yuihime-app-container {
+    overflow: clip !important;
+    overflow-x: clip !important;
+  }
+
+  #settings-scroll-container {
+    overflow-x: clip !important;
+    overflow-y: auto !important;
   }
 }
 

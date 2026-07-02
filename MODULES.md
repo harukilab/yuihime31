@@ -7,6 +7,10 @@ Dokumen ini memuat daftar lengkap dari seluruh modul kognitif, *add-ons*, jembat
 ## ⏳ Sejarah Pembaruan Modul
 *Dokumen ini wajib diperbarui setiap kali terjadi pembuatan, pemindahan, atau modifikasi fungsionalitas modul.*
 
+- **2026-06-29 (v3.10)**: **Penyelarasan Mode Berpikir Cepat & Parallel Tool Engine**:
+  - **Bypass KERNEL_FAIL_SAFE**: Menyetel `isIntentionalEmpty = true` sehingga respons kosong atau pendek (< 5 karakter) tidak lagi memicu LLM reprocessing fallback atau dialog galat darurat, memberikan ruang bagi Yui untuk merespons mandiri via tools (seperti `send_update`/messaging tools).
+  - **Parallel Executions**: Mengubah Mode Berpikir Cepat agar tidak membatasi iterasi (tetap berjalan maksimal 3 iterasi) namun melakukan perombakan performa ekstrem dengan menggerakkan seluruh tool calls secara paralel menggunakan `Promise.all` daripada sekuensial.
+
 - **2026-06-28 (v2.95)**: **Server-side Routes Modularization**:
   - Mengekstrak Telegram routes ke `src/core/server/routes/telegramRoutes.ts` (webhook, status, recipient resolve, bot recreate).
   - Mengekstrak system routes ke `src/core/server/routes/systemRoutes.ts` (health, version, markdown reader/writer).

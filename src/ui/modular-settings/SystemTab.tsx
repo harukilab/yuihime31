@@ -1741,6 +1741,12 @@ export const SystemTab: React.FC<SystemTabProps> = ({
                     performanceVisualizer: { label: 'Enable Real-Time Rendering Diagnostics (FPS Monitor)', type: 'boolean', default: false },
                     bgRemoval: { label: 'Activate Alpha Chroma Matte (Transparent Canvas BG)', type: 'boolean', default: false },
                     bgThemeBlending: { label: 'Matte Transparency Blending Intensity', type: 'slider', min: 0, max: 100, step: 5, default: 50 },
+                    disableUiAutoFocus: {
+                      label: 'Deactivate Input Cursor Auto Focus',
+                      type: 'boolean',
+                      default: false,
+                      description: 'Menonaktifkan pemfokusan kursor (autoFocus/element.focus) otomatis pada seluruh kolom input/textarea di antarmuka sistem.'
+                    },
                     audioRecordMode: {
                       label: 'Acoustic Capturing Protocol',
                       type: 'select',
@@ -1763,6 +1769,7 @@ export const SystemTab: React.FC<SystemTabProps> = ({
                 performanceVisualizer: false,
                 bgThemeBlending: 50,
                 bgRemoval: false,
+                disableUiAutoFocus: false,
                 chatOverlay: 'left'
               },
               (field: string, val: any) => {

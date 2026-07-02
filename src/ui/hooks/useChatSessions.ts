@@ -30,11 +30,28 @@ export function useChatSessions(loadDataCallback?: () => void) {
     const raw = safeLocalStorage.parseJSON('yuihime_logs', []);
     return raw.filter((log: any) => {
       const trimmed = (log.content || '').trim();
-      const isSystemLog = (trimmed.startsWith('[') && trimmed.includes('[SYSTEM]')) ||
-                          trimmed.startsWith('[LEARNING_ENGINE]') ||
-                          trimmed.startsWith('[DREAM_ENGINE]');
-      const isNonCriticalSystem = isSystemLog && !trimmed.includes('FATAL') && !trimmed.includes('CRITICAL');
-      return !isNonCriticalSystem;
+      const isSystemLog = trimmed.startsWith('[') || 
+                          trimmed.startsWith('Action Result from') ||
+                          trimmed.startsWith('Neural sync failed') ||
+                          trimmed.startsWith('Starting Server') ||
+                          trimmed.includes('[SYSTEM]') ||
+                          trimmed.includes('[LEARNING_ENGINE]') ||
+                          trimmed.includes('[DREAM_ENGINE]') ||
+                          trimmed.includes('[CORTEX]') ||
+                          trimmed.includes('[SYSTEM_OBSERVATION]') ||
+                          trimmed.includes('[PHASE]') ||
+                          trimmed.includes('[THOUGHT]') ||
+                          trimmed.includes('[ACTION]') ||
+                          trimmed.includes('[TOOL]') ||
+                          trimmed.includes('[PLAN]') ||
+                          trimmed.includes('[OBSERVATION]') ||
+                          trimmed.includes('Step') ||
+                          trimmed.includes('The user said') ||
+                          trimmed.includes('Analyzing user') ||
+                          trimmed.includes('Current Sub-Persona:') ||
+                          trimmed.includes('Goal:') ||
+                          trimmed.includes('Tone:');
+      return !isSystemLog;
     });
   });
 
@@ -54,6 +71,11 @@ export function useChatSessions(loadDataCallback?: () => void) {
   const [responseQueue, setResponseQueue] = useState<{ type: 'user' | 'agent', content: string }[]>([]);
   const responseQueueRef = useRef<{ type: 'user' | 'agent', content: string }[]>([]);
   const isProcessingQueueRef = useRef<boolean>(false);
+
+  // Synchronous turn-based caches to prevent duplicate log insertions in microtasks and React StrictMode double rendering
+  const lastProcessedMessagesRef = useRef<Set<string>>(new Set());
+  const lastUserMessageRef = useRef<string | null>(null);
+  const lastActiveSessionIdRef = useRef<string>(activeSessionId);
 
   // Load sessions from backend custom storage
   useEffect(() => {
@@ -127,6 +149,12 @@ export function useChatSessions(loadDataCallback?: () => void) {
   // Sync current logs changes to active session with high performance and change sensing
   useEffect(() => {
     if (!activeSessionId) return;
+
+    if (activeSessionId !== lastActiveSessionIdRef.current) {
+      // Just switched sessions or deleted a session; update the ref and ignore
+      lastActiveSessionIdRef.current = activeSessionId;
+      return;
+    }
 
     setSessions(prevSessions => {
       if (!prevSessions || prevSessions.length === 0) return prevSessions;
@@ -255,6 +283,31 @@ export function useChatSessions(loadDataCallback?: () => void) {
     safeLocalStorage.setItem('yuihime_background_logs', JSON.stringify(backgroundLogs));
   }, [backgroundLogs]);
 
+  // Synchronize synchronous turn-based cache refs whenever logs state changes
+  useEffect(() => {
+    let lastUserIndex = -1;
+    for (let i = logs.length - 1; i >= 0; i--) {
+      if (logs[i].type === 'user') {
+        lastUserIndex = i;
+        break;
+      }
+    }
+    const currentTurn = lastUserIndex !== -1 ? logs.slice(lastUserIndex + 1) : logs;
+    
+    lastProcessedMessagesRef.current.clear();
+    currentTurn.forEach(l => {
+      if (l.type === 'agent') {
+        lastProcessedMessagesRef.current.add(stripMessageMeta(l.content));
+      }
+    });
+
+    if (lastUserIndex !== -1) {
+      lastUserMessageRef.current = stripMessageMeta(logs[lastUserIndex].content);
+    } else {
+      lastUserMessageRef.current = null;
+    }
+  }, [logs]);
+
   const stripMessageMeta = (text: string): string => {
     let cleaned = text.trim();
     // Strip [Yui - channel]: or [Yui - channel] prefixes
@@ -326,51 +379,34 @@ export function useChatSessions(loadDataCallback?: () => void) {
     const strippedNew = stripMessageMeta(processedContent);
 
     // If it starts with [ and ends with ], or contains specific tags, it's a system/background log
-    const isSystem = (processedContent.startsWith('[') && (processedContent.includes(']') || processedContent.includes('[PHASE'))) || 
+    const isSystem = processedContent.startsWith('[') || 
                      processedContent.startsWith('Action Result from') ||
                      processedContent.startsWith('Neural sync failed') ||
-                     processedContent.startsWith('[SYSTEM]') ||
-                     processedContent.startsWith('[SYSTEM_OBSERVATION]') ||
                      processedContent.startsWith('Starting Server') ||
-                     processedContent.includes('color-scheme') ||
-                     processedContent.includes('font-family:') ||
-                     processedContent.includes('<!doctype') ||
-                     processedContent.includes('.model3.json') ||
+                     processedContent.startsWith('✨ Kognisi Terhubung') ||
+                     processedContent.startsWith('❌ Gagal') ||
+                     processedContent.startsWith('Riwayat database batin') ||
+                     processedContent.includes('[SYSTEM]') ||
+                     processedContent.includes('[SYSTEM_OBSERVATION]') ||
+                     processedContent.includes('[LEARNING_ENGINE]') ||
+                     processedContent.includes('[DREAM_ENGINE]') ||
+                     processedContent.includes('[CORTEX]') ||
                      processedContent.includes('[PHASE]') ||
                      processedContent.includes('[THOUGHT]') ||
                      processedContent.includes('[ACTION]') ||
                      processedContent.includes('[TOOL]') ||
                      processedContent.includes('[PLAN]') ||
                      processedContent.includes('[OBSERVATION]') ||
+                     processedContent.includes('color-scheme') ||
+                     processedContent.includes('font-family:') ||
+                     processedContent.includes('<!doctype') ||
+                     processedContent.includes('.model3.json') ||
                      processedContent.startsWith('Step') ||
                      processedContent.startsWith('The user said') ||
                      processedContent.startsWith('Analyzing user') ||
                      processedContent.includes('Current Sub-Persona:') ||
                      processedContent.includes('Goal:') ||
                      processedContent.includes('Tone:');
-
-    // EXCEPTION: Show critical errors and neural sync messages in main chat too
-    const isCritical = !processedContent.includes('[SYSTEM_OBSERVATION]') && 
-                       !processedContent.includes('[CORTEX') && 
-                       !processedContent.includes('[DREAM') &&
-                       !processedContent.includes('[LEARNING') &&
-                       !processedContent.includes('[THOUGHT]') &&
-                       !processedContent.includes('[PLAN]') &&
-                       (
-                         processedContent.includes('FATAL') || 
-                         processedContent.includes('CRITICAL') ||
-                         (processedContent.toLowerCase().includes('fail') && 
-                          !processedContent.includes('synced') && 
-                          !processedContent.includes('latency') && 
-                          !processedContent.toLowerCase().includes('failsafe') && 
-                          !processedContent.toLowerCase().includes('fail_safe')) ||
-                         (processedContent.toLowerCase().includes('error') && 
-                          !processedContent.includes('[SYSTEM]') && 
-                          !processedContent.includes('[LEARNING_ENGINE]') && 
-                          !processedContent.includes('[DREAM_ENGINE]') && 
-                          !processedContent.toLowerCase().includes('failsafe') && 
-                          !processedContent.toLowerCase().includes('fail_safe'))
-                       );
 
     const newLog = { 
       type, 
@@ -391,34 +427,53 @@ export function useChatSessions(loadDataCallback?: () => void) {
         return [...prev, newLog].slice(-150);
       });
     } else {
-      if (type === 'agent' && !isCritical) {
+      if (type === 'agent') {
+        if (lastProcessedMessagesRef.current.has(strippedNew)) {
+          console.warn("[addLogDirect] Ignored duplicate agent message via synchronous turn cache:", strippedNew);
+          return;
+        }
+        // Cache immediately and synchronously to block other rapid double-calls in the same tick
+        lastProcessedMessagesRef.current.add(strippedNew);
+
         setLogs(prev => {
-          const lastFew = prev.slice(-10);
-          const isDuplicate = lastFew.some(l => {
+          // Find the last message of the opposite type (user) to define the start of the current turn
+          let lastUserIndex = -1;
+          for (let i = prev.length - 1; i >= 0; i--) {
+            if (prev[i].type === 'user') {
+              lastUserIndex = i;
+              break;
+            }
+          }
+          // Messages in the current turn are from lastUserIndex + 1 to the end
+          const currentTurnMessages = lastUserIndex !== -1 ? prev.slice(lastUserIndex + 1) : prev;
+          
+          const isDuplicate = currentTurnMessages.some(l => {
+            if (l.type !== 'agent') return false;
             const strippedExisting = stripMessageMeta(l.content);
-            const timeDiff = Math.abs(Date.now() - l.timestamp);
             return (
-              (l.type === 'agent' && strippedExisting === strippedNew && timeDiff < 30000) ||
-              (l.type === 'agent' && strippedExisting.includes(strippedNew) && timeDiff < 30000) ||
-              (l.type === 'agent' && strippedNew.includes(strippedExisting) && timeDiff < 30000)
+              strippedExisting === strippedNew ||
+              strippedExisting.includes(strippedNew) ||
+              strippedNew.includes(strippedExisting)
             );
           });
           if (isDuplicate) {
-            console.warn("[addLogDirect] Ignored duplicate agent message within 30s threshold.");
+            console.warn("[addLogDirect] Ignored duplicate agent message in the current turn.");
             return prev;
           }
           return [...prev, newLog];
         });
       } else {
+        if (lastUserMessageRef.current === strippedNew) {
+          console.warn("[addLogDirect] Ignored duplicate user message via synchronous turn cache:", strippedNew);
+          return;
+        }
+        lastUserMessageRef.current = strippedNew;
+
         setLogs(prev => {
-          const lastFew = prev.slice(-10);
-          const isDuplicate = lastFew.some(l => {
-            const strippedExisting = stripMessageMeta(l.content);
-            const timeDiff = Math.abs(Date.now() - l.timestamp);
-            return l.type === type && strippedExisting === strippedNew && timeDiff < 10000;
-          });
+          const lastUserMessage = [...prev].reverse().find(l => l.type === 'user');
+          const isDuplicate = lastUserMessage && stripMessageMeta(lastUserMessage.content) === strippedNew;
           if (isDuplicate) {
-            console.warn(`[addLogDirect] Ignored duplicate ${type} message within 10s threshold.`);
+            console.warn(`[addLogDirect] Ignored duplicate user message in the current turn.`);
             return prev;
           }
           return [...prev, newLog];

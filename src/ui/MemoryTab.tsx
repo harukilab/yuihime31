@@ -86,7 +86,7 @@ export const MemoryTab: React.FC<MemoryTabProps> = ({
                 <div className="mt-4 flex items-center gap-3">
                   <Tag size={12} className="text-amber-500" />
                   <input 
-                    autoFocus
+                    autoFocus={localStorage.getItem('yuihime_disable_autofocus') !== 'true'}
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSaveTags(m.id)}

@@ -173,7 +173,7 @@ export const TopWaveBanner: React.FC<TopWaveBannerProps> = ({
                         onChange={(e) => setTempName(e.target.value)}
                         className="w-full px-2 py-1 bg-black/55 border border-white/10 rounded-xl text-xs text-white placeholder-white/20 focus:outline-none focus:border-amber-500/50"
                         placeholder="Ketik nama baru..."
-                        autoFocus
+                        autoFocus={localStorage.getItem('yuihime_disable_autofocus') !== 'true'}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             handleSaveName();

@@ -1,6 +1,88 @@
 # YuiHime Project Updates Logs
 ---
 
+## [3.11] - 2026-07-02
+### Added
+- **Penyediaan Skrip Sinkronisasi Repository Permanen (`sync-repo.ts`)**:
+  - Menambahkan skrip utility `sync-repo.ts` di root workspace sebagai backup aman jika link repositori GitHub berubah di masa mendatang.
+  - Skrip ini otomatis mencadangkan data penting (seperti database lokal `.yuihime/data/yuihime.db`, file konfigurasi `config.toml`, dan `.env`) sebelum menarik data baru dari GitHub.
+  - Menyediakan perintah pintas `"sync-repo"` di `package.json` agar pengguna dapat melakukan sinkronisasi dengan menjalankan `npm run sync-repo` atau menentukan URL repositori custom secara fleksibel.
+
+## [3.10] - 2026-06-29
+### Changed & Improved
+- **Penyelarasan Mode Berpikir Cepat & Penonaktifan Failsafe**:
+  - Menonaktifkan fungsi `[KERNEL_FAIL_SAFE]` sepenuhnya dengan mengatur `isIntentionalEmpty = true`. Yuihime kini dapat membiarkan output kosong/pendek tanpa memicu fallback pemrosesan ulang atau dialog galat tiruan, mengenali bahwa Yuihime sering menggunakan alat batin (seperti `send_update`/messaging tools) untuk merespons secara langsung.
+  - Mengubah Mode Berpikir Cepat (Bypass Multi-Turn Reasoning) agar tidak membatasi iterasi kognitif ke 1 (tetap diizinkan hingga 3 iterasi penuh). Sebagai gantinya, mempercepat kognisi dengan merombak eksekusi alat batin dari sekuensial menjadi paralel secara penuh menggunakan `Promise.all` guna memproses beberapa chunk/node/task secara simultan.
+
+## [3.09] - 2026-06-29
+### Fixed
+- **Penyempurnaan Mesin Pengunci Geser Dinamis (Hybrid Dynamic Scroll-Lock Engine)**:
+  - Memperbaiki konflik navigasi teks panjang pada input jenis password dan teks biasa (seperti Kunci API/API Key) di mana menyeleksi (*select all* / *block*) teks panjang di HP memicu pergeseran paksa pada elemen pembungkus layout luar.
+  - Memodifikasi pendengar event `scroll` global di `src/App.tsx` agar secara dinamis memeriksa gaya terhitung (`window.getComputedStyle`) dari elemen target.
+  - Secara otomatis mereset `scrollLeft = 0` hanya pada elemen penahan layout yang tidak memiliki properti `overflow-x: auto` atau `overflow-x: scroll` (seperti elemen pembungkus, card, dan kontainer utama).
+  - Menjaga kebebasan scroll horizontal batin pada elemen-elemen input (`INPUT`, `TEXTAREA`) serta menu tab navigasi bergeser (*swipeable horizontal menus*) agar dapat diakses 100% mulus tanpa meloloskan kebocoran pergeseran layout luar (*sideways sliding*).
+
+## [3.08] - 2026-06-29
+### Fixed
+- **Perbaikan Swipeable Horizontal Menu & Slide Viewport Lock**:
+  - Memperbaiki masalah di mana menu bar navigasi kategori/tab yang digeser (*swipeable tabs menu*) pada pengaturan seluler (mobile) membeku atau tidak dapat diakses akibat penanganan reset scroll global.
+  - Memperbaiki penanganan `scroll` di `src/App.tsx` dengan membatasi pencegahan horizontal scroll (locking `scrollLeft = 0`) khusus pada kontainer induk utama (`html`, `body`, `#yuihime-app-container`, dan `#settings-scroll-container`), sehingga membebaskan sub-menu serta komponen geser dalam halaman agar dapat dinavigasi dengan mulus secara horizontal.
+  - Mempertahankan proteksi penguncian geser luar (*sideways sliding prevention*) saat pengguna menyeleksi atau memblok teks panjang (seperti Kunci API/API Key) di ponsel HP.
+
+## [3.07] - 2026-06-29
+### Fixed
+- **Perbaikan Masalah Pesan Ganda di UI (Duplicate Message Rendering Fix)**:
+  - Mengganti algoritma penggabungan urutan log (LCS) yang rentan terhadap pergeseran indeks batin pada `StageTab.tsx` dengan metode pencocokan berbasis toleransi waktu (*time-drift tolerance*).
+  - Mengoptimalkan fungsi `normalizeForDeduplication` agar tidak lagi mereduksi/menghilangkan karakter non-ASCII (seperti huruf Jepang, emoji, dan karakter khusus lainnya), melainkan mempertahankan seluruh teks asli dengan normalisasi spasi dan huruf kecil yang presisi.
+  - Memastikan pesan pengguna (user input) yang terekam di database batin (persistent SQLite database) dan log visual lokal (transient local logs) dapat bersatu secara cerdas dan mulus tanpa duplikasi duplikat.
+
+## [3.06] - 2026-06-29
+### Added
+- **Fitur Nonaktifkan Auto Focus Kursor UI (Deactivate Input Cursor Auto Focus)**:
+  - Menambahkan konfigurasi batin global `disableUiAutoFocus` di dalam panel Developer Settings (Engine Diagnostics & Configurations) di `SystemTab.tsx`.
+  - Mengintegrasikan mekanisme sinkronisasi instan melalui `localStorage` (`yuihime_disable_autofocus`) pada `ModularSettings.tsx` dan inisiasi muatan pertama pada `App.tsx`.
+  - Menyematkan evaluasi kondisional dinamis pada seluruh atribut `autoFocus` di `EnvTab.tsx` (modifikasi variabel lingkungan), `TopWaveBanner.tsx` (ganti nama profil pengguna), dan `MemoryTab.tsx` (modifikasi tags ingatan batin).
+  - Melindungi input pencarian pada `SearchableSelect.tsx` agar tidak memfokuskan kursor secara paksa di perangkat sentuh/desktop jika fitur auto focus dinonaktifkan.
+  - Membatasi pencurian fokus (*focus stealing*) oleh model avatar Live2D di `Live2DAvatar.tsx` agar tidak merusak fokus penulisan kursor pengguna dan menyembunyikan keyboard digital di perangkat mobile.
+
+### Fixed
+- **Perbaikan Masalah Halaman Bergeser ke Samping (Sideways Viewport Sliding Fix)**:
+  - Memperbaiki masalah di mana browser secara otomatis menggeser/slide seluruh halaman ke samping ketika elemen fokus berada di luar area viewport fisik, atau saat pengguna menyeleksi (memblok) teks panjang (seperti Kunci API / API Key) di perangkat HP.
+  - **CSS Overflow Clip Engine**: Mengubah seluruh penanganan `overflow-x: hidden` pada elemen penahan super-skala (`html`, `body`, `#root`, `#yuihime-app-container`, serta penampung seting `#settings-scroll-container`) menjadi `overflow-x: clip !important` di `src/index.css`. Aturan `clip` secara fisik melarang browser melakukan pergeseran halaman/layout secara paksa (programmatic scroll & selection centering), sekaligus membiarkan elemen input (`INPUT`/`TEXTAREA`) melakukan scroll internal untuk pergerakan kursor batin di HP.
+  - Menyempurnakan pendengar event `scroll` dan `selectionchange` pada `src/App.tsx` untuk secara instan dan berkala mereset `scrollLeft` kontainer utama `#yuihime-app-container`, `#settings-scroll-container`, `body`, dan `documentElement` ke koordinat `0`.
+  - **Capturing Scroll Interceptor**: Mengimplementasikan penangkap event `scroll` global dalam fase *capturing* (`{ capture: true }`) untuk secara instan mencegah dan mengunci nilai `scrollLeft = 0` pada semua elemen kontainer layout (`div`, dll.) ketika terjadi pergeseran seleksi teks password/API key, sementara tetap membebaskan input teks (`INPUT` & `TEXTAREA`) agar navigasi teks batin lokal tetap bekerja normal dan nyaman.
+
+## [3.05] - 2026-06-29
+### Fixed
+- **Perbaikan Bug Overlapping Label & Placeholder pada Input Kunci API**:
+  - Menyematkan atribut unik `key={type}` pada komponen `ControlledTextInput` di `SettingsHelperComponents.tsx` untuk memaksa browser merekonstruksi elemen input secara bersih dari awal saat visibilitas sandi (password visibility) diubah secara dinamis. Cara ini secara mutlak mengatasi bug bawaan WebKit/Blink (seperti pada Samsung Internet atau Chromium) di mana placeholder tetap membayang di latar belakang meski kolom input sudah terisi teks biasa.
+  - Memperketat penanganan autocomplete dengan atribut `autoComplete` dinamis serta penonaktifan autokapitalisasi dan koreksi otomatis untuk menjaga kestabilan tata letak input sensitif.
+
+## [3.04] - 2026-06-29
+### Changed
+- **Pengecualian Berkas Pengaturan dari .gitignore**:
+  - Menghapus aturan penyembunyian berkas pengaturan di `.gitignore` untuk menjamin seluruh berkas konfigurasi (`config.toml`, `.yuihime/data/config.toml`, dll) selalu dilacak (*tracked*) secara aktif oleh Git agar hasil perubahan setelan tetap persisten saat proses ekspor ataupun pembagian repositori.
+
+## [3.03] - 2026-06-29
+### Fixed
+- **Perbaikan Kebocoran Log Lintas Sesi (Session Bleed) & Supresi TTS Palsu saat Hapus/Ganti Percakapan**:
+  - Menambahkan sirkuit pelacak transisi percakapan aktif menggunakan **Synchronous State/ID Reference Tracking** (`lastActiveSessionIdRef`) pada `useChatSessions.ts` untuk memisahkan siklus penyimpanan log secara tegas selama perpindahan sesi. Hal ini mencegah data obrolan dari sesi sebelumnya bocor dan menimpa riwayat sesi baru secara tak terduga.
+  - Memasang **TTS Transition Shield** (`prevActiveSessionIdRef`) di `App.tsx` untuk membungkam pelafalan teks-ke-suara (TTS) otomatis secara cerdas ketika pengguna beralih, membuat baru, atau menghapus sesi obrolan, mengeliminasi perilaku di mana asisten mendadak berbicara sendiri saat percakapan ditutup.
+
+## [3.02] - 2026-06-29
+### Fixed
+- **Penyelarasan Urutan Pesan Melalui Longest Common Subsequence (LCS)**:
+  - Mengimplementasikan algoritma penggabungan urutan berbasis **Longest Common Subsequence (LCS)** di `StageTab.tsx` untuk menyatukan log obrolan sementara (`logs`) dengan memori database permanen (`memoryLogs`).
+  - Menghilangkan sepenuhnya ketergantungan pada selisih waktu (*timestamp thresholds*) yang rentan terhadap perbedaan zona waktu (timezone skew) antara sisi klien dan server, serta penundaan penulisan database (clock drift).
+  - Menjamin penggabungan pesan ganda yang sangat presisi berdasarkan urutan giliran (*turn-by-turn alignment*), sehingga pesan tidak akan pernah terduplikasi di antarmuka UI utama meskipun data telah disimpan di database kognitif.
+
+## [3.01] - 2026-06-29
+### Changed
+- **Relokasi Log Teknis ke Console Traces & Filter Duplikasi Berbasis Turn & Synchronous Ref Cache**:
+  - Menyembunyikan seluruh system log teknis (termasuk galat kritis, status sinkronisasi, dan operasi internal) secara permanen dari UI Chat utama, mengarahkannya secara murni ke tab `Console Traces` di berkas riwayat latar belakang (`backgroundLogs`).
+  - Mengimplementasikan sistem penyaringan pesan ganda cerdas berbasis *Turn* (putaran percakapan) di `useChatSessions.ts` dengan mengabaikan pembatas waktu (*timestamp*), sehingga duplikasi pesan di dalam giliran obrolan yang sama dapat disaring secara presisi.
+  - Memasang **Synchronous Cache Refs** (`lastProcessedMessagesRef` dan `lastUserMessageRef`) yang langsung memblokir pesan duplikat di tingkat mikrodetik (microtask), mengatasi double-dispatch akibat render ganda React StrictMode secara instan dan aman.
+
 ## [3.00] - 2026-06-29
 ### Fixed
 - **Pembersihan Kebocoran Log Sistem & Perbaikan Failsafe "Neural path end"**:

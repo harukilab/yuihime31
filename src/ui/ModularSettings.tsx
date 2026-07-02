@@ -246,6 +246,13 @@ export const ModularSettings: React.FC<ModularSettingsProps> = ({
 }) => {
   const [settings, setSettings] = useState<any>({});
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (settings && settings.developer) {
+      const disableAutofocus = settings.developer.disableUiAutoFocus === true;
+      localStorage.setItem('yuihime_disable_autofocus', JSON.stringify(disableAutofocus));
+    }
+  }, [settings]);
   const [unlockedSliders, setUnlockedSliders] = useState<Record<string, boolean>>({});
   const [activeCategory, setActiveCategory] = useState<'all' | 'persona' | 'ai' | 'sandbox' | 'system'>('all');
   const [activeSettingsTab, setActiveSettingsTab] = useState<ModuleType | 'ADDON' | 'VISUAL' | 'GENERAL' | 'SYSTEM' | 'CRON' | 'NEURAL_CIRCUIT' | 'SOUL'>('GENERAL');
@@ -1331,8 +1338,13 @@ export const ModularSettings: React.FC<ModularSettingsProps> = ({
         performanceVisualizer: false,
         bgThemeBlending: 50,
         bgRemoval: false,
+        disableUiAutoFocus: false,
         chatOverlay: 'left'
       };
+    } else {
+      if (initializedSettings.developer.disableUiAutoFocus === undefined) {
+        initializedSettings.developer.disableUiAutoFocus = false;
+      }
     }
     applyThemePalette(initializedSettings.colorScheme.selected || 'default');
 

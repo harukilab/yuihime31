@@ -1480,8 +1480,6 @@ export const StageTab: React.FC<StageTabProps> = ({
       isSystem: m.type === 'fact' || m.speaker === 'System'
     }));
 
-  const allLogs = [...(logs || []), ...memoryLogs.filter(m => !m.isSystem)];
-
   const normalizeForDeduplication = (text: any): string => {
     if (text && typeof text === 'object') {
       if (text.content !== undefined) {
@@ -1502,8 +1500,8 @@ export const StageTab: React.FC<StageTabProps> = ({
     // 2. Strip brackets/meta (e.g. [SYSTEM], [Yui - web_...], [Yui - tg_...])
     str = str.replace(/^\[[^\]]+\]:?\s*/g, '');
     
-    // 3. Lowercase and remove all non-alphanumeric characters
-    return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // 3. Lowercase, trim, and normalize whitespaces to handle special characters gracefully
+    return str.toLowerCase().replace(/\s+/g, ' ').trim();
   };
 
   const parseTimestampToMs = (ts: any): number => {
@@ -1516,54 +1514,53 @@ export const StageTab: React.FC<StageTabProps> = ({
     return Date.now();
   };
 
-  // 1. Sort allLogs chronologically first to establish a definitive, correct order with a stable fallback
-  const chronologicalLogs = [...allLogs]
-    .map((log, index) => ({ ...log, _originalIndex: index }))
-    .sort((a, b) => {
-      const tA = parseTimestampToMs(a.timestamp);
-      const tB = parseTimestampToMs(b.timestamp);
-      if (tA !== tB) {
-        return tA - tB;
-      }
-      return a._originalIndex - b._originalIndex;
-    });
+  // Sort transient and persistent logs chronologically before alignment
+  const sortedTransient = [...(logs || [])].sort((a, b) => parseTimestampToMs(a.timestamp) - parseTimestampToMs(b.timestamp));
+  const sortedPersistent = [...memoryLogs.filter(m => !m.isSystem)].sort((a, b) => parseTimestampToMs(a.timestamp) - parseTimestampToMs(b.timestamp));
 
-  // 2. Assign a precise chronological index to each log
-  const allLogsWithIndex = chronologicalLogs.map((log, index) => ({
-    ...log,
-    _chronoIndex: index
-  }));
+  // Merge sequences using content comparison and time tolerance to completely eliminate double entries
+  const mergeLogSequences = (transientList: any[], persistentList: any[]): any[] => {
+    const result = [...transientList];
 
-  // Sort and remove duplicates based on text and proximity of timestamp (< 45 seconds)
-  const uniqueLogs: any[] = [];
-  const contentMap = new Map<string, typeof allLogsWithIndex>();
-
-  for (const log of allLogsWithIndex) {
-    const key = normalizeForDeduplication(log.content);
-    if (!contentMap.has(key)) {
-      contentMap.set(key, []);
-    }
-    contentMap.get(key)!.push(log);
-  }
-
-  for (const logsList of contentMap.values()) {
-    const sorted = [...logsList].sort((a, b) => a._chronoIndex - b._chronoIndex);
-    const filtered: typeof allLogsWithIndex = [];
-    for (const log of sorted) {
-      const logTs = parseTimestampToMs(log.timestamp);
-      const isDuplicate = filtered.some(existing => {
-        const existingTs = parseTimestampToMs(existing.timestamp);
-        const timeDiff = Math.abs(existingTs - logTs);
-        return existing.type === log.type && timeDiff < 45000;
+    for (const p of persistentList) {
+      const pNorm = normalizeForDeduplication(p.content);
+      const matchIndex = result.findIndex(t => {
+        if (t.type !== p.type) return false;
+        const tNorm = normalizeForDeduplication(t.content);
+        if (tNorm !== pNorm) return false;
+        
+        const tMs = parseTimestampToMs(t.timestamp);
+        const pMs = parseTimestampToMs(p.timestamp);
+        // If timestamps are within 25 seconds of each other, they represent the same user/agent turn
+        return Math.abs(tMs - pMs) < 25000;
       });
-      if (!isDuplicate) {
-        filtered.push(log);
+
+      if (matchIndex !== -1) {
+        // Merge the fields, prioritizing the transient logs for UI state but keeping any persistent database fields
+        result[matchIndex] = {
+          ...p,
+          ...result[matchIndex]
+        };
+      } else {
+        // No match found, insert persistent log at the correct chronological index
+        const pMs = parseTimestampToMs(p.timestamp);
+        const insertIndex = result.findIndex(t => parseTimestampToMs(t.timestamp) > pMs);
+        if (insertIndex !== -1) {
+          result.splice(insertIndex, 0, p);
+        } else {
+          result.push(p);
+        }
       }
     }
-    uniqueLogs.push(...filtered);
-  }
 
-  uniqueLogs.sort((a, b) => a._chronoIndex - b._chronoIndex);
+    return result;
+  };
+
+  const uniqueLogs = mergeLogSequences(sortedTransient, sortedPersistent)
+    .map((log, index) => ({
+      ...log,
+      _chronoIndex: index
+    }));
 
   const activeSessionObj = sessions.find(s => s.id === activeSessionId);
   const activeSessionTitle = activeSessionObj ? activeSessionObj.title : 'hqlo lagi apa';

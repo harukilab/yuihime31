@@ -51,7 +51,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         /Mobi|Android|iPhone|iPad|Macintosh/i.test(navigator.userAgent) && 
         ('ontouchstart' in window || navigator.maxTouchPoints > 0);
       
-      if (!isMobileOrTouch) {
+      const isUiAutoFocusDisabled = localStorage.getItem('yuihime_disable_autofocus') === 'true';
+      if (!isMobileOrTouch && !isUiAutoFocusDisabled) {
         setTimeout(() => {
           searchInputRef.current?.focus();
         }, 50);

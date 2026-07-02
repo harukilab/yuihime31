@@ -391,7 +391,7 @@ export const EnvTab: React.FC<EnvTabProps> = ({ onShowInfo }) => {
                             value={editingValue}
                             onChange={e => setEditingValue(e.target.value)}
                             className="w-full bg-zinc-900 border border-cyan-500/40 rounded-lg p-1.5 text-xs text-white outline-none font-mono focus:bg-black"
-                            autoFocus
+                            autoFocus={localStorage.getItem('yuihime_disable_autofocus') !== 'true'}
                             onKeyDown={e => {
                               if (e.key === 'Enter') handleSaveEdit(key);
                               if (e.key === 'Escape') handleCancelEditing();

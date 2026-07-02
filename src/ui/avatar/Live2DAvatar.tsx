@@ -631,7 +631,7 @@ export const Live2DAvatar: React.FC<Live2DAvatarProps> = ({
         try {
           model = await (Live2DModel as any).from(resolvedUrl, {
             autoHitTest: true,
-            autoFocus: !disableMouseTracking,
+            autoFocus: !disableMouseTracking && localStorage.getItem('yuihime_disable_autofocus') !== 'true',
             crossOrigin: 'anonymous'
           });
         } catch (mErr) {
@@ -645,7 +645,7 @@ export const Live2DAvatar: React.FC<Live2DAvatarProps> = ({
           try {
             model = await (Live2DModel as any).from(secondaryUrl, { 
               autoHitTest: true, 
-              autoFocus: !disableMouseTracking, 
+              autoFocus: !disableMouseTracking && localStorage.getItem('yuihime_disable_autofocus') !== 'true', 
               crossOrigin: 'anonymous' 
             });
           } catch (m2Err) {
@@ -655,9 +655,9 @@ export const Live2DAvatar: React.FC<Live2DAvatarProps> = ({
                 try {
                    model = await (Live2DModel as any).from(alt, { 
                      autoHitTest: true, 
-                     autoFocus: !disableMouseTracking, 
-                     crossOrigin: 'anonymous' 
-                   });
+                     autoFocus: !disableMouseTracking && localStorage.getItem('yuihime_disable_autofocus') !== 'true',
+                     crossOrigin: 'anonymous'
+                    });
                    if (model) break;
                 } catch (e) {
                    // Ignore alt model load failures
@@ -670,8 +670,8 @@ export const Live2DAvatar: React.FC<Live2DAvatarProps> = ({
                 const stableUrl = getBaseUrl() + '/models/hiyori/hiyori_free_t08.model3.json';
                 model = await (Live2DModel as any).from(stableUrl, { 
                   autoHitTest: true, 
-                  autoFocus: !disableMouseTracking, 
-                  crossOrigin: 'anonymous' 
+                  autoFocus: !disableMouseTracking && localStorage.getItem('yuihime_disable_autofocus') !== 'true',
+                  crossOrigin: 'anonymous'
                 });
               } catch (fErr) {
                 throw m2Err;

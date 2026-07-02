@@ -237,7 +237,9 @@ export async function executeCortexThink(
     }
   }
   let iteration = 0;
-  let maxIterations = settings.developer?.enableMultiTurnReasoning !== false ? 3 : 1;
+  // UPDATE: Mode Berpikir Cepat (Bypass Multi-Turn Reasoning) tidak lagi membatasi turn/iterasi ke 1 (maxIterations tetap 3).
+  // Sebagai gantinya, mode ini mengaktifkan eksekusi paralel multi-proses / multi-node untuk seluruh tool calls secara simultan.
+  let maxIterations = 3;
   let loopContext = { ...augContext, config: settings };
 
   if (!state.systemHealth) {
@@ -709,10 +711,9 @@ Ensure your "thought" field is extremely short (under 1 sentence, or empty). Ani
         }).catch(() => {});
       } catch (_) {}
 
-      logs.push(`[PHASE 4] Hub distributed ${toolsToCall.length} tasks to Executors sequentially to ensure state synchronization...`);
+      logs.push(`[PHASE 4] Hub distributed ${toolsToCall.length} tasks to Executors in PARALLEL to enable concurrent process execution...`);
 
-      const toolResults = [];
-      for (const tc of toolsToCall) {
+      const toolPromises = toolsToCall.map(async (tc) => {
         let tool = SystemRegistry.getTool(tc.name || tc.tool);
         
         if (!tool) {
@@ -749,11 +750,14 @@ Ensure your "thought" field is extremely short (under 1 sentence, or empty). Ani
         } else {
           res = { tool: tc.name || tc.tool, error: 'Tool not found', success: false, notFound: true };
         }
-        toolResults.push(res);
+        
         const logMsg = `[TOOL] ${res.tool} ${res.success ? 'success' : 'failed'}.`;
         logs.push(logMsg);
         eventBus.emit('OUTPUT_EMITTED', { response: logMsg, isInternal: true });
-      }
+        return res;
+      });
+
+      const toolResults = await Promise.all(toolPromises);
 
       eventBus.emit('EXECUTING_COMPLETED', { results: toolResults });
       stateMachine.transitionTo('IDLE');
@@ -888,7 +892,12 @@ Ensure your "thought" field is extremely short (under 1 sentence, or empty). Ani
 
   // Guna mematuhi instruksi batin di akhir alur: jika finalAnswer kosong (empty string) setelah iterasi penuh selesai,
   // ini merupakan kondisi galat kognisi (bukan kesengajaan). Kita wajib memicu failsafe untuk mengamankan dialog manis Yui.
-  const isIntentionalEmpty = false;
+  // UPDATE: Diaktifkan true agar jika Yui tidak bicara dalam loop (karena menggunakan tools seperti messaging/send_update), dibiarkan kosong tanpa memicu failsafe.
+  const isIntentionalEmpty = true;
+
+  if (!finalAnswer || finalAnswer.length < 5) {
+    logs.push("[KERNEL_FAIL_SAFE] Allowed empty or short output (< 5 chars) without triggering fallback, as Yui may have executed tool-based replies/actions.");
+  }
 
   if (!isIntentionalEmpty && (!finalAnswer || finalAnswer.length < 5)) {
     if (isFailsafeEnabled) {

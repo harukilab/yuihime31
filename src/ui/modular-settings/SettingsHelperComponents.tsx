@@ -31,6 +31,7 @@ export const ControlledTextInput: React.FC<ControlledInputProps> = ({
 
   return (
     <input
+      key={type}
       type={type}
       value={localVal}
       onChange={(e) => {
@@ -44,6 +45,10 @@ export const ControlledTextInput: React.FC<ControlledInputProps> = ({
       }}
       className={className}
       placeholder={placeholder}
+      autoComplete={type === 'password' ? 'new-password' : 'off'}
+      autoCapitalize="none"
+      autoCorrect="off"
+      spellCheck={false}
     />
   );
 };
